@@ -4,10 +4,10 @@
   <div class="preloader flex-column justify-content-center align-items-center">
     <img
       class="animation__shake"
-      src="{% static 'dist/img/AdminLTELogo.png'%}"
+      src="{% static 'dist/img/buffalostatecrest.png'%}"
       alt="AdminLTELogo"
-      height="60"
-      width="60"
+      height="200"
+      width="200"
     />
   </div>
 
@@ -197,17 +197,18 @@
     <!-- Brand Logo -->
     <a href="index3.html" class="brand-link">
       <img
-        src="{% static 'dist/img/AdminLTELogo.png'%}"
+        src="{% static 'dist/img/buffalostatecrest.png'%}"
         alt="AdminLTE Logo"
         class="brand-image img-circle elevation-3"
         style="opacity: 0.8"
       />
-      <span class="brand-text font-weight-light">AdminLTE 3</span>
+      <span class="brand-text font-weight-light">EOP | MCS</span>
     </a>
 
     <!-- Sidebar -->
     <div class="sidebar">
       <!-- Sidebar user panel (optional) -->
+      {%if user.is_authenticated%}
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
           <img
@@ -217,9 +218,10 @@
           />
         </div>
         <div class="info">
-          <a href="#" class="d-block">Alexander Pierce</a>
+          <a href="#" class="d-block">{{user.username}}</a>
         </div>
       </div>
+      {%endif%}
 
       <!-- SidebarSearch Form -->
       <div class="form-inline">
