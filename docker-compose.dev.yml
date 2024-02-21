@@ -1,0 +1,73 @@
+version: "2"
+services:
+  django-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    container_name: dev_api
+    volumes:
+      - "./:/dev-mcp"
+      - dev_static_volume:/assets
+      - dev_media_volume:/media
+    ports:
+      - "8002:8002"
+    env_file: ./env/.env.dev
+    environment:
+      DJANGO_SETTINGS_MODULE: "mcp.settings"
+    depends_on:
+      - dev_db
+      #- mcp_redis_server
+    command: >
+      python manage.py runserver 0.0.0.0:8002
+    networks:
+      - dev-api-network
+
+  dev_adminer:
+    image: adminer
+    container_name: dev_adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - dev-api-network
+
+  dev_redis:
+    image: redis:6.2-alpine
+    container_name: dev_redis
+    restart: always
+    ports:
+      - "6381:6381"
+    command: redis-server
+    volumes:
+      - cache:/data
+    networks:
+      - dev-api-network
+
+  dev_db:
+    restart: always
+    image: postgres
+    container_name: dev_db
+    expose:
+      - "5434" # Publishes 5433 to other containers but NOT to host machine
+    ports:
+      - "5434:5434"
+    command: -p 5434 && create database dev_db
+
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data/
+    env_file: ./env/.env.dev
+    networks:
+      - dev-api-network
+
+volumes:
+  dev_static_volume:
+  dev_media_volume:
+  dev_postgres_data:
+  cache:
+    driver: local
+
+networks:
+  dev-api-network:
+    name: dev-api-network
+    external: true
