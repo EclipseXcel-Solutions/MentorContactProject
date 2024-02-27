@@ -8,14 +8,18 @@ from django.contrib.auth import authenticate , login
 class Login(View):
 
     def get(self,request,*args,**kwargs):
-        context = {}
+        context = {
+            'title':'User Login'
+        }
         return render(request=request , template_name='users/login.html',context=context)
 
     def post(self,request,*args,**kwargs):
 
         form_data = request.POST 
+
         username = form_data.get('username','')
         password = form_data.get('password','')
+
         try:
             user = User.objects.get(username = username)
         except User.DoesNotExist:
@@ -27,3 +31,5 @@ class Login(View):
                 return redirect('admin_dashboard')
             else:
                 return redirect('login_view')
+            
+    
