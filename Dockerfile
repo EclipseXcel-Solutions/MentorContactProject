@@ -34,7 +34,7 @@ RUN apk update \
 
 # install dependencies
 ADD . /dev-mcp
-RUN pip install --upgrade pipa
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 # run entrypoint.sh
 CMD ["python" , "manage.py" , "runserver"]
