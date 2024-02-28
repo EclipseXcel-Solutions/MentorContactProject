@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %} {% load static %} {%block head%}
+<style>
+  #form-builder {
+    display: flex;
+  }
+
+  #form-elements {
+    width: 200px;
+    padding: 10px;
+  }
+
+  .form-element {
+    margin-bottom: 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    cursor: move;
+  }
+
+  #form-preview {
+    flex-grow: 1;
+    min-height: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+</style>
+{%endblock%} {% block context %}
+<!-- Main content -->
+<div class="container">
+  <div id="form-builder d-flex justify-content-between">
+    <div id="form-elements">
+      <div class="form-element" draggable="true" data-type="text">
+        Text Input
+      </div>
+      <div class="form-element" draggable="true" data-type="textarea">
+        Textarea
+      </div>
+      <!-- Add more form elements here -->
+    </div>
+    <div id="form-preview">Drop here</div>
+  </div>
+</div>
+<script>
+  document
+    .getElementById("form-preview")
+    .addEventListener("dragover", (event) => {
+      event.preventDefault();
+    });
+
+  document.getElementById("form-preview").addEventListener("drop", (event) => {
+    event.preventDefault();
+    const data = event.dataTransfer.getData("text");
+    const draggedElement = document.getElementById(data);
+    const clone = draggedElement.cloneNode(true);
+    document.getElementById("form-preview").appendChild(clone);
+  });
+</script>
+{% endblock %}
