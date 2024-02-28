@@ -1,23 +1,28 @@
 {%extends 'users/base.html'%} {%block context%}
-<div class="container">
+<div class="container card m-5 p-5">
+  <h5>{{form.title}}</h5>
   {%for section in form.sections%}
-  <div class="border mt-2 p-2 rounded">
-    {{section.name}} <br />
-    <div class="d-flex">
-      {%for field in section.fields%} {%if field.type == 'select'%}
-      <select name="cars" id="cars" class="form-control mt-2">
-        <option value="volvo">Volvo</option>
-        <option value="saab">Saab</option>
-        <option value="mercedes">Mercedes</option>
-        <option value="audi">Audi</option>
-      </select>
+  <div class="rounded border mt-2 p-2">
+    {{section.title}} {%for row in section.rows%}
+    <div class="d-flex w-full">
+      {%for field in row.fields%} {%if field.input_type == 'select'%}
+      <div class="form-group">
+        <label>{{field.title}}</label>
+        <select name="cars" id="cars" class="form-control">
+          {%for choice in field.choices%}
+          <option value="{{choice}}">{{choice}}</option>
+          {%endfor%}
+        </select>
+      </div>
       {%else%}
-      <input type="{{field.type}}" class="form-control mt-2" />
-
+      <div class="form-group">
+        <label>{{field.title}}</label>
+        <input type="{{field.input_type}}" class="form-control w-100" />
+      </div>
       {%endif%} {%endfor%}
     </div>
+    {%endfor%}
   </div>
   {%endfor%}
 </div>
-
 {%endblock%}
