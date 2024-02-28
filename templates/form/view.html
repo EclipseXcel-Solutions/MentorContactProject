@@ -1,0 +1,23 @@
+{%extends 'users/base.html'%} {%block context%}
+<div class="container">
+  {%for section in form.sections%}
+  <div class="border mt-2 p-2 rounded">
+    {{section.name}} <br />
+    <div class="d-flex">
+      {%for field in section.fields%} {%if field.type == 'select'%}
+      <select name="cars" id="cars" class="form-control mt-2">
+        <option value="volvo">Volvo</option>
+        <option value="saab">Saab</option>
+        <option value="mercedes">Mercedes</option>
+        <option value="audi">Audi</option>
+      </select>
+      {%else%}
+      <input type="{{field.type}}" class="form-control mt-2" />
+
+      {%endif%} {%endfor%}
+    </div>
+  </div>
+  {%endfor%}
+</div>
+
+{%endblock%}
