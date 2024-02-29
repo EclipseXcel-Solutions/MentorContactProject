@@ -1,28 +1,57 @@
 {%extends 'users/base.html'%} {%block context%}
-<div class="container card m-5 p-5">
+<div class="container mt-2 card p-4" >
   <h5>{{form.title}}</h5>
+  <form method="POST" action="{%url 'mentor_contact_record_form_view'%}" >
+    {%csrf_token%}
   {%for section in form.sections%}
-  <div class="rounded border mt-2 p-2">
-    {{section.title}} {%for row in section.rows%}
-    <div class="d-flex w-full">
-      {%for field in row.fields%} {%if field.input_type == 'select'%}
-      <div class="form-group">
-        <label>{{field.title}}</label>
-        <select name="cars" id="cars" class="form-control">
-          {%for choice in field.choices%}
-          <option value="{{choice}}">{{choice}}</option>
-          {%endfor%}
-        </select>
+  <div class="rounded border mt-2 p-3">
+    {{section.title}}
+    <hr/>
+    {%for row in section.rows%}
+    <div class="row d-flex flex-wrap">
+      {%for field in row.fields%} {%if field.input_type == 'select'%} 
+      <div class="form-group col-md">
+          <label>{{field.title}}</label>
+          <select name="{{field.input_name}}" id="cars" class="form-control" required>
+            {%for choice in field.choices%}
+            {%for c in choice%}
+            <option value="{{c}}">{{c}}</option>
+            {%endfor%}
+            {%endfor%}
+          </select>
+        </div>
+        {% elif field.input_type == 'checkbox' %}
+        <div class="form-group col-md">
+            <label>{{field.title}}</label>
+            <div class="row">
+            {%for choice in field.choices%}
+                {%for ch in choice%}
+                <div class="col-md-3"> 
+                    <input class type="checkbox" id="coding" name="{{field.input_name}}" value="{{ch}}"/>
+                    <span>{{ch}}</span>
+                    </div>
+                {%endfor%}
+            {%endfor%}
+            </div>
+                </div>
+        {%else%}       
+        <div class="form-group col-md">
+            <label>{{field.title}}</label>
+            <input type="{{field.input_type}}" name="{{field.input_name}}"  placeholder="{{field.placeholder}}" class="form-control w-100" required/>
+          </div>
+          {%endif%} {%endfor%}
+        </div>
+        {%endfor%}
       </div>
-      {%else%}
-      <div class="form-group">
-        <label>{{field.title}}</label>
-        <input type="{{field.input_type}}" class="form-control w-100" />
-      </div>
-      {%endif%} {%endfor%}
+      {%endfor%}
+      <br />
+      <button type="submit" class="btn btn-primary">Submit</button>
+
     </div>
-    {%endfor%}
+    
   </div>
-  {%endfor%}
+  
+
+  </form>
 </div>
 {%endblock%}

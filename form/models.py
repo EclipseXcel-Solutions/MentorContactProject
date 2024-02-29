@@ -84,10 +84,12 @@ class Field(models.Model):
                ('checkbox', 'checkbox'), ('textarea', 'textarea'), ('date', 'date'),
                ('datetime', 'datetime'), ('time', 'time'))
     title = models.CharField(max_length=200)
+    input_name = models.CharField(max_length=200)
     placeholder = models.CharField(max_length=200, null=True, blank=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE)
     input_type = models.CharField(choices=choices)
     is_multiple_choice = models.BooleanField(default=False)
+    has_other_field = models.BooleanField(default=False)
 
     choices = ArrayField(
 
@@ -110,4 +112,5 @@ class Field(models.Model):
             'input_type': self.input_type,
             'is_multiple_choice': self.is_multiple_choice,
             'choices': self.choices,
+            "input_name": self.input_name
         }
