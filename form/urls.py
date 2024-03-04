@@ -14,9 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import FormBuilder, MentorContactRecordForm
+from .views import FormBuilder, MentorContactRecordForm, PublicView
 urlpatterns = [
     path('builder/', FormBuilder.as_view(), name="form_builder_view"),
-    path('mentor-contact-record/', MentorContactRecordForm.as_view(),
-         name="mentor_contact_record_form_view")
+    path('mentor-contact-record/<id>', MentorContactRecordForm.as_view(),
+         name="mentor_contact_record_form_view"),
+    path('form/public/<id>', PublicView.as_view(),
+         name="public_form_view")
 ]

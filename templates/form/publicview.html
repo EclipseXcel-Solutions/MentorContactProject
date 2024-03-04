@@ -1,19 +1,15 @@
-{%extends 'dashboard/base.html'%} {%block context%}
-<div class="row content-wrapper h-100">
-    <div class="col-md ml-6 m-2 card ">
-        <div class="rounded border mt-1 p-3">
-            Form Builder
-        </div>
+{%extends 'users/base.html'%} {%block context%}
 
+<div class="container" >
+    <div class="card p-4 m-4">
+    <div class="card-header bg-secondary rounded" role="button">
+        EOP | {{form.title}}
     </div>
-    <div class="col-md m-2 card p-4 h-100 overflow-scroll" >
-        <h5>
-            {{form.title}}
-        </h5>
-  <form method="POST" action="{%url 'mentor_contact_record_form_view' id=id%}" >
+
+  <form  method="POST" action="{%url 'mentor_contact_record_form_view' id=id%}" >
     {%csrf_token%}
   {%for section in form.sections%}
-  <div class="rounded border mt-1 p-3 bg-">
+  <div class="rounded border mt-2 p-3 ">
     {{section.title}}
     <hr/>
     {%for row in section.rows%}

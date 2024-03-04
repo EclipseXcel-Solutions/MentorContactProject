@@ -16,10 +16,24 @@ class FormBuilder(View):
 class MentorContactRecordForm(View):
 
     def get(self, request, *args, **kwargs):
-        form = FormBuilderModel.objects.first()
-
-        return render(request=request, template_name='form/view.html', context={'form': form.to_json})
+        form = FormBuilderModel.objects.filter(
+            id=kwargs.get('id')
+        ).first()
+        return render(request=request, template_name='form/view.html', context={'form': form.to_json, 'id': kwargs.get('id')})
 
     def post(self, request, *args, **kwargs):
         print(dict(request.POST))
-        return redirect(reverse('mentor_contact_record_form_view'))
+        return redirect(reverse('mentor_contact_record_form_view', kwargs={'id': kwargs.get('id')}))
+
+
+class PublicView(View):
+
+    def get(self, request, *args, **kwargs):
+        form = FormBuilderModel.objects.filter(
+            id=kwargs.get('id')
+        ).first()
+        return render(request=request, template_name='form/publicview.html', context={'form': form.to_json, 'id': kwargs.get('id')})
+
+    def post(self, request, *args, **kwargs):
+        print(dict(request.POST))
+        return redirect(reverse('mentor_contact_record_form_view', kwargs={'id': kwargs.get('id')}))
