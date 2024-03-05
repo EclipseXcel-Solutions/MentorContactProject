@@ -86,10 +86,12 @@ class Field(models.Model):
     title = models.CharField(max_length=200)
     input_name = models.CharField(max_length=200)
     placeholder = models.CharField(max_length=200, null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE)
     input_type = models.CharField(choices=choices)
     is_multiple_choice = models.BooleanField(default=False)
     has_other_field = models.BooleanField(default=False)
+    is_disabled = models.BooleanField(default=False)
 
     choices = ArrayField(
 

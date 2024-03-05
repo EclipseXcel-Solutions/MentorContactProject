@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import Dashboard
+from .views import Dashboard, IndexPage
 urlpatterns = [
-    path('',Dashboard.as_view(),name="admin_dashboard")
+    path('admin/', Dashboard.as_view(), name="admin_dashboard")
 ]

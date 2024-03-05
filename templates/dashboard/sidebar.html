@@ -23,15 +23,17 @@
         </p>
       </a>
       <ul class="nav nav-treeview" style="display: none">
+        {%for form in form_list%}
         <li class="nav-item">
           <a
-            href="{%url 'mentor_contact_record_form_view' id=1%}"
+            href="{%url 'mentor_contact_record_form_view' id=form.id%}"
             class="nav-link"
           >
             <i class="far fa-circle nav-icon"></i>
-            <p>Mentor Contact</p>
+            <p>{{form.title}}</p>
           </a>
         </li>
+        {%endfor%}
       </ul>
     </li>
   </ul>

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import FormBuilder, Field, Sections, Row
+from .models import FormBuilder, Sections
+from .models import Field, Row
 # Register your models here.
 
 admin.site.register(FormBuilder)
