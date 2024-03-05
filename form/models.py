@@ -23,6 +23,7 @@ class FormBuilder(models.Model):
     @property
     def to_json(self):
         return {
+            'id': self.id,
             'name': self.name,
             'title': self.title,
             'description': self.description,
@@ -50,6 +51,7 @@ class Sections(models.Model):
     def to_json(self):
 
         return {
+            'id': self.id,
             'name': self.name,
             'title': self.title,
             'position': self.position,
@@ -73,6 +75,7 @@ class Row(models.Model):
     @property
     def to_json(self):
         return {
+            'id': self.id,
             'position': self.position,
             'message': self.message,
             'fields': [field.to_json for field in self.get_fields]
@@ -83,20 +86,24 @@ class Field(models.Model):
     choices = (('text', 'text'), ('select', 'select'), ('email', 'email'),
                ('checkbox', 'checkbox'), ('textarea', 'textarea'), ('date', 'date'),
                ('datetime', 'datetime'), ('time', 'time'))
+    date_type_choices = (
+        ('TODAY', 'TODAY'),
+        ('CUSTOM', 'CUSTOM')
+    )
     title = models.CharField(max_length=200)
     input_name = models.CharField(max_length=200)
     placeholder = models.CharField(max_length=200, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE)
     input_type = models.CharField(choices=choices)
+    date_type = models.CharField(
+        choices=date_type_choices, max_length=10, default='CUSTOM')
     is_multiple_choice = models.BooleanField(default=False)
     has_other_field = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
 
     choices = ArrayField(
-
         ArrayField(
-
             models.CharField(max_length=100, blank=True, null=True),
             size=20,
             blank=True,
@@ -109,10 +116,30 @@ class Field(models.Model):
     @property
     def to_json(self):
         return {
+            'id': self.id,
             'title': self.title,
             'placeholder': self.placeholder,
             'input_type': self.input_type,
             'is_multiple_choice': self.is_multiple_choice,
             'choices': self.choices,
-            "input_name": self.input_name
+            "input_name": self.input_name,
+            'date_field_choices': self.date_type,
+
         }
+
+
+class FormFieldAnswers(models.Model):
+
+    field = models.ForeignKey(Field, on_delete=models.CASCADE)
+    section = models.ForeignKey(Sections, on_delete=models.CASCADE)
+    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
+    answer = models.TextField()
+    array_answer = ArrayField(
+        ArrayField(
+            models.CharField(max_length=100, blank=True, null=True),
+            size=20,
+            blank=True,
+        ),
+        blank=True,
+        size=20,
+    )

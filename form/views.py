@@ -3,6 +3,7 @@ from django.views import View
 from django.core import serializers
 from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
+import json
 # Create your views here.
 
 
@@ -38,5 +39,5 @@ class PublicView(View):
         return render(request=request, template_name='form/publicview.html', context={'form': form.to_json, 'id': kwargs.get('id')})
 
     def post(self, request, *args, **kwargs):
-        print(dict(request.POST))
+        print(json.dumps(request.POST))
         return redirect(reverse('mentor_contact_record_form_view', kwargs={'id': kwargs.get('id')}))

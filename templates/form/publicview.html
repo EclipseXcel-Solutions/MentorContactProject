@@ -7,7 +7,7 @@
     </div>
 
   <form  method="POST" action="{%url 'mentor_contact_record_form_view' id=id%}" >
-    {%csrf_token%}
+{%csrf_token%}
   {%for section in form.sections%}
   <div class="rounded border mt-2 p-3 ">
     {{section.title}}
@@ -32,7 +32,7 @@
             {%for choice in field.choices%}
                 {%for ch in choice%}
                 <div class="col-md-3"> 
-                    <input class type="checkbox" id="coding" name="{{field.input_name}}" value="{{ch}}"/>
+                    <input class type="checkbox" id="coding" name="{{field.id}}" value="{{ch}}"/>
                     <span>{{ch}}</span>
                     </div>
                 {%endfor%}
@@ -42,7 +42,7 @@
         {%else%}       
         <div class="form-group col-md">
             <label>{{field.title}}</label>
-            <input type="{{field.input_type}}" name="{{field.input_name}}"  placeholder="{{field.placeholder}}" class="form-control w-100" required/>
+            <input type="{{field.input_type}}" name="{{field.id}}-{{section.id}}-{{form.id}}"  placeholder="{{field.placeholder}}" class="form-control w-100" required/>
           </div>
           {%endif%} {%endfor%}
         </div>
