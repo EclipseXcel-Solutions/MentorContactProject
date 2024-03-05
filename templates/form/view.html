@@ -1,10 +1,42 @@
 {%extends 'dashboard/base.html'%} {%block context%}
-<div class="row content-wrapper h-100">
+<div class="row content-wrapper">
     <div class="col-md ml-6 m-2 card ">
-        <div class="rounded border mt-1 p-3">
-            Form Builder
+        <div class="rounded border mt-1 p-3 d-flex justify-content-between">
+            <label>Form Builder</label>
+            <button class="btn btn-success btn-sm">Save</button>
         </div>
-
+        {%for section in form.sections%}
+        <div class="card collapsed-card mt-1">
+            <div class="card-header">
+              <h3 class="card-title">Section: {{section.title}}</h3>
+              <div class="card-tools">
+                <input type="text" name="oder" value="{{section.position}}"/>
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+            <ul class="list-group">
+                
+             {%for row in section.rows%}
+             <li class="list-group-item bg-primary mt-2 rounded">
+                <span>Row: {{row.position}}</span>
+                 <button class="btn btn-sm "><i class="nav-icon fas fa-edit"></i></button>             
+                 <button class="btn btn-sm "><i class="nav-icon fas fa-trash"></i></button>      
+                 <button class="btn btn-sm "><i class="nav-icon fas fa-plus"></i></button>      
+                {%for field in row.fields%}
+                    <li class="list-group-item d-flex justify-content-between"><span>{{field.title}}</span> <button class="btn btn-sm "><i class="nav-icon fas fa-edit"></i></button></li>
+                {%endfor%}
+             </li>
+             {%endfor%}
+             
+            
+             </ul>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+        {%endfor%}
+        <button class="btn btn-primary">+ Add Section</button>
     </div>
     <div class="col-md m-2 card p-4 h-100 overflow-scroll" >
         <h5>

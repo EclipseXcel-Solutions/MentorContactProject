@@ -16,11 +16,12 @@ class FormBuilder(View):
 class MentorContactRecordForm(View):
 
     def get(self, request, *args, **kwargs):
-        form = FormBuilderModel.objects.filter(
-            id=kwargs.get('id')
-        ).first()
-        data = {'form': form.to_json, 'id': kwargs.get(
-            'id'), 'form_list': FormBuilderModel.objects.all()}
+
+        data = {
+            'form': FormBuilderModel.objects.filter(id=kwargs.get('id')).first().to_json,
+            'id': kwargs.get('id'),
+            'form_list': FormBuilderModel.objects.all()
+        }
         return render(request=request, template_name='form/view.html', context=data)
 
     def post(self, request, *args, **kwargs):
