@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
-import json
+import uuid
 # Create your models here.
 
 
@@ -31,6 +31,20 @@ class FormBuilder(models.Model):
             'created_by': self.created_by,
             'sections': [section.to_json for section in self.sections]
         }
+
+
+class FormSubmission(models.Model):
+
+    date_time = models.DateTimeField(auto_now_add=True)
+    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
+    submission_id = models.UUIDField(default=uuid.uuid4)
+
+    @property
+    def get_submission_id(self):
+        return self.submission_id
+
+    def __str__(self) -> str:
+        return str(self.get_submission_id)
 
 
 class Sections(models.Model):
@@ -101,7 +115,6 @@ class Field(models.Model):
     is_multiple_choice = models.BooleanField(default=False)
     has_other_field = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
-
     choices = ArrayField(
         ArrayField(
             models.CharField(max_length=100, blank=True, null=True),
@@ -127,6 +140,9 @@ class Field(models.Model):
 
         }
 
+    def __str__(self) -> str:
+        return self.title
+
 
 class FormFieldAnswers(models.Model):
 
@@ -134,6 +150,8 @@ class FormFieldAnswers(models.Model):
     section = models.ForeignKey(Sections, on_delete=models.CASCADE)
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     answer = models.TextField()
+    submission = models.ForeignKey(
+        FormSubmission, on_delete=models.SET_NULL, null=True, blank=True)
     array_answer = ArrayField(
         ArrayField(
             models.CharField(max_length=100, blank=True, null=True),

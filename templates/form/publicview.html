@@ -6,7 +6,7 @@
         EOP | {{form.title}}
     </div>
 
-  <form  method="POST" action="{%url 'mentor_contact_record_form_view' id=id%}" >
+  <form  method="POST" action="{%url 'public_form_view' id=id%}" >
 {%csrf_token%}
   {%for section in form.sections%}
   <div class="rounded border mt-2 p-3 ">
@@ -17,7 +17,7 @@
       {%for field in row.fields%} {%if field.input_type == 'select'%} 
       <div class="form-group col-md">
           <label>{{field.title}}</label>
-          <select name="{{field.input_name}}" id="cars" class="form-control" required>
+          <select name="{{field.id}}-{{section.id}}-{{form.id}}" id="cars" class="form-control" required>
             {%for choice in field.choices%}
             {%for c in choice%}
             <option value="{{c}}">{{c}}</option>
@@ -32,7 +32,7 @@
             {%for choice in field.choices%}
                 {%for ch in choice%}
                 <div class="col-md-3"> 
-                    <input class type="checkbox" id="coding" name="{{field.id}}" value="{{ch}}"/>
+                    <input class type="checkbox" id="coding" name="{{field.id}}-{{section.id}}-{{form.id}}" value="{{ch}}"/>
                     <span>{{ch}}</span>
                     </div>
                 {%endfor%}
