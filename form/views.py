@@ -5,7 +5,7 @@ from django.urls import reverse
 import json
 from django.contrib import messages
 from .models import Field, Sections, FormFieldAnswers, FormSubmission
-
+import uuid
 # Create your views here.
 
 
@@ -35,7 +35,31 @@ class MentorContactRecordForm(View):
 class DataImportView(View):
 
     def get(self, request, *args, **kwargs):
-        return render(request=request, template_name='form/dataImortForm.html', context={})
+        context = {}
+        return render(request=request, template_name='form/dataImortForm.html', context=context)
+
+    def post(self, request, *args, **kwargs):
+        return redirect(reverse('data_import_view'))
+
+
+class DataTables(View):
+    def get(self, request, *args, **kwargs):
+        form = FormBuilderModel.objects.filter(
+            id=self.kwargs.get('id')).first()
+
+        if form:
+            submissions = FormSubmission.objects.filter(form=form).all()
+
+            context = {
+                'fields': form.get_all_fields,
+                'data': [[FormFieldAnswers.objects.filter(field=field['id'], submission=submission).first().array_answer for field in form.get_all_fields] for submission in submissions]
+
+            }
+            print(context)
+            return render(request=request, template_name='form/dataTable.html', context=context)
+
+        else:
+            return render(request=request, template_name='404.html')
 
     def post(self, request, *args, **kwargs):
         return redirect(reverse('data_import_view'))
@@ -57,7 +81,7 @@ class PublicView(View):
         form_data_object_list = []
 
         submission, created = FormSubmission.objects.get_or_create(
-            form=FormBuilderModel.objects.get(id=kwargs.get('id')))
+            form=FormBuilderModel.objects.get(id=kwargs.get('id')), submission_id=uuid.uuid4())
 
         for key in keys:
             value = data[key]
@@ -74,9 +98,7 @@ class PublicView(View):
             ))
 
         try:
-
             FormFieldAnswers.objects.bulk_create(form_data_object_list)
-
         except Exception as e:
             print(e)
             messages.error(self.request, str(e))

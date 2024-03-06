@@ -32,6 +32,15 @@ class FormBuilder(models.Model):
             'sections': [section.to_json for section in self.sections]
         }
 
+    @property
+    def get_all_fields(self):
+        fields = []
+        for section in self.sections:
+            for row in section.rows:
+                for field in row.get_fields:
+                    fields.append(field)
+        return [{'title': field.title, 'id': field.id} for field in fields]
+
 
 class FormSubmission(models.Model):
 
