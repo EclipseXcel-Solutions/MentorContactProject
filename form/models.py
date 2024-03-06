@@ -97,9 +97,17 @@ class Row(models.Model):
 
 
 class Field(models.Model):
-    choices = (('text', 'text'), ('select', 'select'), ('email', 'email'),
-               ('checkbox', 'checkbox'), ('textarea', 'textarea'), ('date', 'date'),
-               ('datetime', 'datetime'), ('time', 'time'))
+
+    choices = (
+        ('text', 'text'),
+        ('select', 'select'),
+        ('email', 'email'),
+        ('checkbox', 'checkbox'),
+        ('textarea', 'textarea'),
+        ('date', 'date'),
+        ('datetime', 'datetime'), ('time', 'time')
+    )
+
     date_type_choices = (
         ('TODAY', 'TODAY'),
         ('CUSTOM', 'CUSTOM')
@@ -161,3 +169,6 @@ class FormFieldAnswers(models.Model):
         blank=True,
         size=20,
     )
+
+    def __str__(self) -> str:
+        return self.field.title
