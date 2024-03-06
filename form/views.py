@@ -32,6 +32,15 @@ class MentorContactRecordForm(View):
         return redirect(reverse('mentor_contact_record_form_view', kwargs={'id': kwargs.get('id')}))
 
 
+class DataImportView(View):
+
+    def get(self, request, *args, **kwargs):
+        return render(request=request, template_name='form/dataImortForm.html', context={})
+
+    def post(self, request, *args, **kwargs):
+        return redirect(reverse('data_import_view'))
+
+
 class PublicView(View):
 
     def get(self, request, *args, **kwargs):

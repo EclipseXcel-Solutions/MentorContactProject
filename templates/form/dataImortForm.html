@@ -1,0 +1,78 @@
+{%extends 'dashboard/base.html'%} {%block context%}
+
+<div class="row content-wrapper">
+  <div class="container">
+    <div class="d-flex flex-column">
+      <div class="card m-2">
+        <div class="card-header">Data Import Form</div>
+        <div class="card-body">
+          <form method="post" id="data-import-form">
+            {%csrf_token%}
+            <div class="form-group">
+              <label>CSV File</label>
+              <input class="form-control" id="data-file" type="file" />
+            </div>
+            <div class="form-group">
+              <button type="submit" id="confirm_btn" class="btn btn-primary">
+                <i class="fa fa-save m-2"></i>Import
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="card m-2" id="table-data">
+        <div class="card-header">File Data</div>
+        <div
+          class="card-body"
+          id="table-data-body"
+          style="height: 50vh; overflow: scroll"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let dataImportForm = document.getElementById("data-import-form");
+
+  dataImportForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    let file = document.getElementById("data-file")?.files[0];
+    let fileUrl = URL.createObjectURL(file);
+    Papa.parse(file, {
+      complete: function (results) {
+        let parsedData = results.data;
+
+        let table = document.createElement("table");
+        table.classList.add("table");
+        table.style.overflow = "scroll";
+
+        let head = document.createElement("thead");
+        head.classList.add("thead-dark");
+        let headRow = document.createElement("tr");
+
+        parsedData[0].forEach((headers) => {
+          let th = document.createElement("th");
+          th.textContent = headers;
+          headRow.append(th);
+        });
+
+        head.appendChild(headRow);
+        table.appendChild(head);
+        let cleanedData = parsedData.filter((data) => data != parsedData[0]);
+        cleanedData.forEach((rowData) => {
+          let row = document.createElement("tr");
+          rowData.forEach((cellData) => {
+            let cell = document.createElement("td");
+            cell.classList.add("table-cell");
+            cell.textContent = cellData;
+            row.appendChild(cell);
+          });
+          table.appendChild(row);
+        });
+        document.getElementById("table-data-body").appendChild(table);
+      },
+    });
+  });
+</script>
+{%endblock%}
