@@ -39,11 +39,42 @@ const mapFields = () => {
   document.getElementById("table-data-body").appendChild(table);
 };
 
-const createData = async () => {
+const onSelect = (obj, index) => {
+  parsedData[0][index] = Number(obj.value);
+  document.getElementById("table-data-body").innerHTML = "";
+  mapFields();
+};
+
+function prepareData() {
+  const preparedData = [];
+  const data = [...parsedData];
+  const mapKeys = data[0];
+  const dataToPrepare = data.filter((d) => d != mapKeys);
+
+  dataToPrepare.forEach((item, index, array) => {
+    const formData = [];
+    mapKeys.forEach((mapItem, index, array) => {
+      console.log(typeof mapItem, mapItem);
+      if (typeof mapItem == "number") {
+        const finalObj = {
+          field: mapItem,
+          array_answer: [item[index]?.split(",")],
+          form: "{{form}}",
+          section: "{{section}}",
+          submission: "",
+        };
+        formData.push(finalObj);
+      }
+    });
+    preparedData.push(formData);
+  });
+  return preparedData;
+}
+const submitData = async () => {
   const url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/form/import/data/`;
   const response = await fetch(url, {
     method: "POST",
-    body: JSON.stringify(parsedData),
+    body: JSON.stringify(prepareData()),
     headers: {
       Accept: "application/json, text/plain, */*",
       "Content-Type": "application/json",
@@ -52,11 +83,4 @@ const createData = async () => {
   });
   console.log(await response.json());
 };
-
-const onSelect = (obj, index) => {
-  parsedData[0][index] = obj.value;
-  document.getElementById("table-data-body").innerHTML = "";
-  mapFields();
-};
-
-dataSubmissionBtn.addEventListener("click", createData);
+dataSubmissionBtn.addEventListener("click", submitData);
