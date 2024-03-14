@@ -28,34 +28,35 @@ class MentorContactRecordForm(View):
         return render(request=request, template_name='form/view.html', context=data)
 
     def post(self, request, *args, **kwargs):
-        print(dict(request.POST))
         return redirect(reverse('mentor_contact_record_form_view', kwargs={'id': kwargs.get('id')}))
 
 
 class DataImportView(View):
 
     def get(self, request, *args, **kwargs):
-        context = {}
+
+        form = FormBuilderModel.objects.first()
+        context = {
+            'fields': form.get_all_fields
+        }
         return render(request=request, template_name='form/dataImortForm.html', context=context)
 
     def post(self, request, *args, **kwargs):
-        return redirect(reverse('data_import_view'))
+        return render(json.dumps({'message': 'all good'}), content_type='application/json')
 
 
 class DataTables(View):
     def get(self, request, *args, **kwargs):
+
         form = FormBuilderModel.objects.filter(
             id=self.kwargs.get('id')).first()
 
         if form:
             submissions = FormSubmission.objects.filter(form=form).all()
-
             context = {
                 'fields': form.get_all_fields,
                 'data': [[FormFieldAnswers.objects.filter(field=field['id'], submission=submission).first().array_answer for field in form.get_all_fields] for submission in submissions]
-
             }
-            print(context)
             return render(request=request, template_name='form/dataTable.html', context=context)
 
         else:
@@ -79,10 +80,8 @@ class PublicView(View):
 
         del keys[0]
         form_data_object_list = []
-
         submission, created = FormSubmission.objects.get_or_create(
             form=FormBuilderModel.objects.get(id=kwargs.get('id')), submission_id=uuid.uuid4())
-
         for key in keys:
             value = data[key]
             form_essentials = key.split("-")

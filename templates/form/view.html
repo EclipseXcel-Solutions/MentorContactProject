@@ -12,7 +12,7 @@
             <div class="card-header">
               <h3 class="card-title">Section: {{section.title}}</h3>
               <div class="card-tools">
-                <input type="text" name="oder" value="{{section.position}}"/>
+                <input type="text" name="oder" id="section-{{section.position}}" value="{{section.position}}" onchange="swapSections(this)"/>
                 <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i></button>
               </div>
             </div>
@@ -108,4 +108,7 @@
   </form>
 </div>
 </div>
+<script>
+  
+</script>
 {%endblock%}

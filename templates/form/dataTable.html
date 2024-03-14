@@ -3,11 +3,11 @@
   <div class="row">
     <div class="col-12">
       <div class="card m-4">
-        <div class="card-header">
-          <h3 class="card-title">Data Table</h3>
+        <div class="card-header col-md">
+          <h3 class="row card-title">Data Table</h3>
 
-          <div class="card-tools">
-            <div class="input-group input-group-sm" style="width: 150px">
+          <div class="card-tools row">
+            <div class="input-group input-group-sm" style="width: 200px">
               <input
                 type="text"
                 name="table_search"
@@ -20,6 +20,22 @@
                   <i class="fas fa-search"></i>
                 </button>
               </div>
+            </div>
+            <div class="filters d-flex align-items-center">
+              {%for field in fields%} {%if field.type == 'select'%}
+              <div class="input-group input-group-sm d-flex flex-col">
+                <select class="form-control">
+                  {%for option in field.options%} {%for option_name in option%}
+                  <option>{{option_name}}</option>
+                  {%endfor%} {%endfor%}
+                </select>
+              </div>
+              {%elif field.type == 'date'%}
+              <div class="input-group input-group-sm">
+                <input type="date" class="form-control" />
+              </div>
+
+              {%endif%} {%endfor%}
             </div>
           </div>
         </div>

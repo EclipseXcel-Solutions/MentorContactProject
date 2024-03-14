@@ -10,20 +10,40 @@
             {%csrf_token%}
             <div class="form-group">
               <label>CSV File</label>
-              <input class="form-control" id="data-file" type="file" />
+              <input
+                class="form-control"
+                id="data-file"
+                type="file"
+                accept=".csv"
+              />
             </div>
             <div class="form-group">
-              <button type="submit" id="confirm_btn" class="btn btn-primary">
+              <button
+                id="import-btn"
+                type="submit"
+                id="confirm_btn"
+                class="btn btn-primary"
+              >
                 <i class="fa fa-save m-2"></i>Import
               </button>
             </div>
           </form>
         </div>
       </div>
-      <div class="card m-2" id="table-data">
-        <div class="card-header">File Data</div>
+      <div class="card m-2" id="field-mapper">
+        <div class="card-header">Field Mapping </div>
         <div
           class="card-body"
+          id="field-mapping-body"
+          style="height: 50vh; overflow: scroll"
+        >
+      </div>
+      </div>
+      </div>
+      <div class="card m-2" id="table-data">
+        <div class="card-header d-flex  justify-content-between">File Data <button id="data-submission-btn" class="btn btn-success btn-sm">Import</button></div>
+        <div
+          class="card-body col"
           id="table-data-body"
           style="height: 50vh; overflow: scroll"
         ></div>
@@ -34,16 +54,40 @@
 
 <script>
   let dataImportForm = document.getElementById("data-import-form");
-
+  let dataSubmissionBtn = document.getElementById('data-submission-btn')
+  let mappedHeadings = []
+  var parsedData = []
+  // table filler
   dataImportForm.addEventListener("submit", (event) => {
     event.preventDefault();
     let file = document.getElementById("data-file")?.files[0];
     let fileUrl = URL.createObjectURL(file);
     Papa.parse(file, {
       complete: function (results) {
-        let parsedData = results.data;
+        parsedData = results.data;
 
-        let table = document.createElement("table");
+        // creating objects from array
+        const keys = parsedData[0];
+        keys.forEach((key , index , keys)=>{
+          document.getElementById("field-mapping-body").innerHTML +=  `
+          <div class='row form-group d-flex'>
+            <div width="50%">${key}</div>
+            <select onchange="onSelect(this,${index})" class='form-control'>
+              <option value="None">Select An Option</option>
+              {%for f in fields%}
+              <option value={{f.id}}>{{f.title}}</option>
+              {%endfor%}
+            </select>
+          </div>
+          `
+        })
+
+      },
+    });
+   
+  });
+  const mapFields = () => {
+    let table = document.createElement("table");
         table.classList.add("table");
         table.style.overflow = "scroll";
 
@@ -71,8 +115,24 @@
           table.appendChild(row);
         });
         document.getElementById("table-data-body").appendChild(table);
-      },
-    });
-  });
+  }
+   const createData = async () => { 
+    const url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/form/import/data/`
+    const response = await fetch(url , {
+      method:'POST',body:parsedData
+    })
+    console.log(await response.json())
+  }
+  dataSubmissionBtn.addEventListener('click' , createData)
+
+  
+  const onSelect = (obj,index) => {
+    parsedData[0][index] = obj.value  
+    document.getElementById("table-data-body").innerHTML= ""
+    mapFields()
+  }
+
+  
+  
 </script>
 {%endblock%}

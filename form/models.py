@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 import uuid
+
 # Create your models here.
 
 
@@ -39,7 +40,7 @@ class FormBuilder(models.Model):
             for row in section.rows:
                 for field in row.get_fields:
                     fields.append(field)
-        return [{'title': field.title, 'id': field.id} for field in fields]
+        return [{'title': field.title, 'id': field.id, 'type': field.input_type, 'options': field.choices} for field in fields]
 
 
 class FormSubmission(models.Model):
@@ -166,7 +167,7 @@ class FormFieldAnswers(models.Model):
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
     section = models.ForeignKey(Sections, on_delete=models.CASCADE)
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
-    answer = models.TextField()
+    answer = models.TextField(null=True, blank=True)
     submission = models.ForeignKey(
         FormSubmission, on_delete=models.SET_NULL, null=True, blank=True)
     array_answer = ArrayField(
@@ -181,3 +182,23 @@ class FormFieldAnswers(models.Model):
 
     def __str__(self) -> str:
         return self.field.title
+
+
+class CalculatedFields(models.Model):
+    """
+        Note: this can only be used in fields like
+        numbers,date,time
+    """
+    CALCULATION_TYPES = (
+        ('MINUTES', 'MINUTES'),
+        ('HOURS', 'HOURS'),
+        ('SECONDS', 'SECONDS'),
+        ('DIFFERENCE', 'DIFFERENCE'),
+        ('SUM', 'SUM'),
+    )
+    name = models.CharField(max_length=100)
+    field1 = models.ForeignKey(
+        Field, on_delete=models.CASCADE, related_name='greater_calculation_field')
+    field2 = models.ForeignKey(
+        Field, on_delete=models.CASCADE, related_name='smaller_calculation_field')
+    return_type = models.CharField(max_length=10, choices=CALCULATION_TYPES)
