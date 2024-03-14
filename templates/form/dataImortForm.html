@@ -39,6 +39,9 @@
           id="field-mapping-body"
           style="height: 50vh; overflow: scroll"
         >
+       <div class="d-flex justify-content-center" id="empty-icon">
+        <img src="https://theyouthproject.in/static/media/empty_data_set.88c7d759.png"  height="50%" width="50%" draggable="false"/>
+       </div>
       </div>
       </div>
       </div>
@@ -48,11 +51,43 @@
           class="card-body col"
           id="table-data-body"
           style="height: 50vh; overflow: scroll"
-        ></div>
+        >
+        <div class="d-flex justify-content-center" id="empty-icon">
+          <img src="https://theyouthproject.in/static/media/empty_data_set.88c7d759.png"  height="50%" width="50%" draggable="false"/>
+         </div>
+      </div>
       </div>
     </div>
   </div>
   <script src="{% static '/js/form/dataImport.js' %}"></script>
-
+  <script>
+    function dataImportHandler (event) {
+      event.preventDefault();
+      let file = document.getElementById("data-file")?.files[0];
+      Papa.parse(file, {
+        complete: function (results) {
+          parsedData = results.data;
+          const keys = parsedData[0];
+          if (parsedData[0].length > 0){
+            document.getElementById("field-mapping-body").innerHTML = ''
+          }
+          keys.forEach((key, index, keys) => {
+            document.getElementById("field-mapping-body").innerHTML += `
+              <div class='row form-group d-flex'>
+                <div width="50%">${key}</div>
+                <select onchange="onSelect(this,${index})" class='form-control'>
+                  <option value="None">Select An Option</option>
+                  {%for f in fields%}
+                  <option value={{f.id}}>{{f.title}}</option>
+                  {%endfor%}
+                </select>
+              </div>
+              `;
+          });
+        },
+      });
+    }
+    dataImportForm.addEventListener("submit",dataImportHandler );
+  </script>
 </div>
 {%endblock%}

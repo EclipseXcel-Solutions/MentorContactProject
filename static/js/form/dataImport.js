@@ -6,32 +6,6 @@ var parsedData = [];
 /*
 This section reads the file and creates a mapper section
 */
-dataImportForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  let file = document.getElementById("data-file")?.files[0];
-  let fileUrl = URL.createObjectURL(file);
-  Papa.parse(file, {
-    complete: function (results) {
-      parsedData = results.data;
-
-      // creating objects from array
-      const keys = parsedData[0];
-      keys.forEach((key, index, keys) => {
-        document.getElementById("field-mapping-body").innerHTML += `
-          <div class='row form-group d-flex'>
-            <div width="50%">${key}</div>
-            <select onchange="onSelect(this,${index})" class='form-control'>
-              <option value="None">Select An Option</option>
-              {%for f in fields%}
-              <option value={{f.id}}>{{f.title}}</option>
-              {%endfor%}
-            </select>
-          </div>
-          `;
-      });
-    },
-  });
-});
 
 // mapping field to the table
 const mapFields = () => {
@@ -79,10 +53,10 @@ const createData = async () => {
   console.log(await response.json());
 };
 
-dataSubmissionBtn.addEventListener("click", createData);
-
 const onSelect = (obj, index) => {
   parsedData[0][index] = obj.value;
   document.getElementById("table-data-body").innerHTML = "";
   mapFields();
 };
+
+dataSubmissionBtn.addEventListener("click", createData);
