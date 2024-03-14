@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.views import View
 from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
@@ -42,7 +43,8 @@ class DataImportView(View):
         return render(request=request, template_name='form/dataImortForm.html', context=context)
 
     def post(self, request, *args, **kwargs):
-        return render(json.dumps({'message': 'all good'}), content_type='application/json')
+        print(json.loads(request.body))
+        return JsonResponse(data={'message': 'all good'})
 
 
 class DataTables(View):
