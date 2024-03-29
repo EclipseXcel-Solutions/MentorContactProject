@@ -61,6 +61,7 @@
   </div>
   <script src="{% static '/js/form/dataImport.js' %}"></script>
   <script>
+    let formId = '{{form.id}}'
     function dataImportHandler (event) {
       event.preventDefault();
       let file = document.getElementById("data-file")?.files[0];
@@ -87,7 +88,34 @@
         },
       });
     }
+    function prepareData() {
+      const preparedData = [];
+      const data = [...parsedData];
+      const mapKeys = data[0];
+      const dataToPrepare = data.filter((d) => d != mapKeys);
+    
+      dataToPrepare.forEach((item, index, array) => {
+        const formData = [];
+        mapKeys.forEach((mapItem, index, array) => {
+          console.log(typeof mapItem, mapItem);
+          if (typeof mapItem == "number") {
+            const finalObj = {
+              field: mapItem,
+              array_answer: [item[index]?.split(",")],
+              form: "{{form}}",
+              section: "{{section}}",
+              submission: "",
+            };
+            formData.push(finalObj);
+          }
+        });
+        preparedData.push(formData);
+      });
+      return preparedData;
+    }
     dataImportForm.addEventListener("submit",dataImportHandler );
+
+
   </script>
 </div>
 {%endblock%}

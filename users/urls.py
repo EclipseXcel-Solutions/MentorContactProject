@@ -14,8 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import Login , Logout
+from .views import Login, Logout, Page404
+from django.views.generic import TemplateView
+
 urlpatterns = [
-    path('login/',Login.as_view(),name='login_view'),
-    path('logout/',Logout.as_view(),name='logout_view')
+    path('404/', TemplateView.as_view(template_name='users/404.html'), name="404"),
+    path('login/', Login.as_view(), name='login_view'),
+    path('logout/', Logout.as_view(), name='logout_view'),
 ]

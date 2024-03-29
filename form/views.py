@@ -7,6 +7,9 @@ import json
 from django.contrib import messages
 from .models import Field, Sections, FormFieldAnswers, FormSubmission
 import uuid
+from django.contrib.postgres.aggregates import ArrayAgg
+
+
 # Create your views here.
 
 
@@ -35,15 +38,46 @@ class MentorContactRecordForm(View):
 class DataImportView(View):
 
     def get(self, request, *args, **kwargs):
+        self.form_id = self.kwargs.get('id')
+        form = FormBuilderModel.objects.filter(id=self.form_id).first()
+        print(form)
+        if form:
+            context = {
+                'fields': form.get_all_fields
+            }
+            return render(request=request, template_name='form/dataImortForm.html', context=context)
+        else:
+            return redirect(reverse('404'))
 
-        form = FormBuilderModel.objects.first()
-        context = {
-            'fields': form.get_all_fields
-        }
-        return render(request=request, template_name='form/dataImortForm.html', context=context)
+    def get_sections(self, fields):
+
+        sections = {}
+        for field in fields:
+            sections[field['field']] = Field.objects.filter(
+                id=field['field']).first()
+        return sections
 
     def post(self, request, *args, **kwargs):
-        print(json.loads(request.body))
+        self.form_id = self.kwargs.get('id')
+        data = json.loads(request.body)
+        sections = self.get_sections(data[0])
+        prepared_data = []
+        for fields in data:
+            submission_id = uuid.uuid4()
+            for field in fields:
+                prepared_data.append(FormFieldAnswers(
+                    form=sections[field['field']].row.section.form,
+                    field=sections[field['field']],
+                    submission_id=submission_id,
+                    section=sections[field['field']].row.section,
+                    answer=None,
+                    array_answer=field['array_answer']
+                ))
+
+        print(prepared_data[0])
+
+        form_answers = FormFieldAnswers.objects.bulk_create(prepared_data)
+
         return JsonResponse(data={'message': 'all good'})
 
 
@@ -54,10 +88,12 @@ class DataTables(View):
             id=self.kwargs.get('id')).first()
 
         if form:
-            submissions = FormSubmission.objects.filter(form=form).all()
+            submissions = FormFieldAnswers.objects.values(
+                'submission_id').distinct()
+
             context = {
                 'fields': form.get_all_fields,
-                'data': [[FormFieldAnswers.objects.filter(field=field['id'], submission=submission).first().array_answer for field in form.get_all_fields] for submission in submissions]
+                'data': [[FormFieldAnswers.objects.filter(field=field['id'], submission_id=submission['submission_id']).first().array_answer if FormFieldAnswers.objects.filter(field=field['id'], submission_id=submission['submission_id']).first() is not None else [] for field in form.get_all_fields] for submission in submissions]
             }
             return render(request=request, template_name='form/dataTable.html', context=context)
 

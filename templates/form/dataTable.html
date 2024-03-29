@@ -53,9 +53,15 @@
               {%for row in data%}
               <tr>
                 {%for data in row%} {% if data|length > 1 %}
-                <td>{%for d in data%} {{d}}, {%endfor%}</td>
+                <td>
+                  {%for d in data%} {%for field in d %} {{field}} {%endfor%},
+                  {%endfor%}
+                </td>
                 {%else%}
-                <td>{%for d in data%} {{d}} {%endfor%}</td>
+                <td>
+                  {%for d in data%} {%for field in d %} {{field}} {%endfor%}
+                  {%endfor%}
+                </td>
                 {%endif%} {%endfor%}
               </tr>
               {%endfor%}

@@ -45,33 +45,11 @@ const onSelect = (obj, index) => {
   mapFields();
 };
 
-function prepareData() {
-  const preparedData = [];
-  const data = [...parsedData];
-  const mapKeys = data[0];
-  const dataToPrepare = data.filter((d) => d != mapKeys);
-
-  dataToPrepare.forEach((item, index, array) => {
-    const formData = [];
-    mapKeys.forEach((mapItem, index, array) => {
-      console.log(typeof mapItem, mapItem);
-      if (typeof mapItem == "number") {
-        const finalObj = {
-          field: mapItem,
-          array_answer: [item[index]?.split(",")],
-          form: "{{form}}",
-          section: "{{section}}",
-          submission: "",
-        };
-        formData.push(finalObj);
-      }
-    });
-    preparedData.push(formData);
-  });
-  return preparedData;
-}
 const submitData = async () => {
-  const url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/form/import/data/`;
+  const url = `${window.location.protocol}//${window.location.hostname}:${
+    window.location.port
+  }/form/import/data/${1}`;
+  console.log(url);
   const response = await fetch(url, {
     method: "POST",
     body: JSON.stringify(prepareData()),
@@ -83,4 +61,5 @@ const submitData = async () => {
   });
   console.log(await response.json());
 };
+
 dataSubmissionBtn.addEventListener("click", submitData);

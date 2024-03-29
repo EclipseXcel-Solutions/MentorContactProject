@@ -21,7 +21,7 @@ urlpatterns = [
          name="mentor_contact_record_form_view"),
     path('public/<id>/', PublicView.as_view(),
          name="public_form_view"),
-    path('import/data/', DataImportView.as_view(),
+    path('import/data/<id>/', DataImportView.as_view(),
          name="data_import_view"),
     path('data-table/<id>/', DataTables.as_view(),
          name="data_table_view")

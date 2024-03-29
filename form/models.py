@@ -168,8 +168,7 @@ class FormFieldAnswers(models.Model):
     section = models.ForeignKey(Sections, on_delete=models.CASCADE)
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     answer = models.TextField(null=True, blank=True)
-    submission = models.ForeignKey(
-        FormSubmission, on_delete=models.SET_NULL, null=True, blank=True)
+    submission_id = models.UUIDField()
     array_answer = ArrayField(
         ArrayField(
             models.CharField(max_length=100, blank=True, null=True),

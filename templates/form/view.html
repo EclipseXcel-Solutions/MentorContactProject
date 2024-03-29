@@ -54,8 +54,8 @@
             {{form.title}} 
         </h5>
       <span>
-        <a href="{%url 'public_form_view' id=1%}"><i class="fa fa-eye m-1"></i></a>
-        <a href="{%url 'data_import_view' %}"><i class="fa fa-save m-1"></i></a>
+        <a href="{%url 'public_form_view' id=form.id%}"><i class="fa fa-eye m-1"></i></a>
+        <a href="{%url 'data_import_view' id=form.id%}"><i class="fa fa-save m-1"></i></a>
       </span>
        </div>
   <form method="POST" action="{%url 'mentor_contact_record_form_view' id=1%}" >
