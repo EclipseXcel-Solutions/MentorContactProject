@@ -8,7 +8,7 @@ from django.contrib import messages
 from .models import Field, Sections, FormFieldAnswers, FormSubmission
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
-
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -83,25 +83,45 @@ class DataImportView(View):
 
 class DataTables(View):
     def get(self, request, *args, **kwargs):
-
         form = FormBuilderModel.objects.filter(
             id=self.kwargs.get('id')).first()
 
         if form:
-            submissions = FormFieldAnswers.objects.values(
-                'submission_id').distinct()
+            submissions_paginator = Paginator(FormFieldAnswers.objects.values(
+                'submission_id').distinct(), 30)  # Adjust the number of items per page as needed
+            page_number = request.GET.get('page')
+            submissions_page = submissions_paginator.get_page(page_number)
+
+            # Prefetch all relevant FormFieldAnswers in a single query
+            answers = FormFieldAnswers.objects.filter(
+                submission_id__in=[submission['submission_id']
+                                   for submission in submissions_page],
+                field__in=[field['id'] for field in form.get_all_fields]
+            )
+
+            # Organize answers by submission_id and field_id for efficient access
+            answers_by_submission = {
+                submission['submission_id']: {} for submission in submissions_page}
+            for answer in answers:
+                answers_by_submission[answer.submission_id][answer.field_id] = answer.array_answer
+
+            data = [
+                [
+                    answers_by_submission[submission['submission_id']].get(
+                        field['id'], [])
+                    for field in form.get_all_fields
+                ]
+                for submission in submissions_page
+            ]
 
             context = {
                 'fields': form.get_all_fields,
-                'data': [[FormFieldAnswers.objects.filter(field=field['id'], submission_id=submission['submission_id']).first().array_answer if FormFieldAnswers.objects.filter(field=field['id'], submission_id=submission['submission_id']).first() is not None else [] for field in form.get_all_fields] for submission in submissions]
+                'data': data,
+                'submissions_page': submissions_page
             }
             return render(request=request, template_name='form/dataTable.html', context=context)
-
         else:
             return render(request=request, template_name='404.html')
-
-    def post(self, request, *args, **kwargs):
-        return redirect(reverse('data_import_view'))
 
 
 class PublicView(View):
@@ -118,8 +138,7 @@ class PublicView(View):
 
         del keys[0]
         form_data_object_list = []
-        submission, created = FormSubmission.objects.get_or_create(
-            form=FormBuilderModel.objects.get(id=kwargs.get('id')), submission_id=uuid.uuid4())
+        submission = uuid.uuid4()
         for key in keys:
             value = data[key]
             form_essentials = key.split("-")
@@ -131,11 +150,12 @@ class PublicView(View):
                 form=FormBuilderModel.objects.get(id=form_essentials[2]),
                 array_answer=list_ans,
                 answer='',
-                submission=submission
+                submission_id=submission
             ))
 
         try:
             FormFieldAnswers.objects.bulk_create(form_data_object_list)
+            print('data saved')
         except Exception as e:
             print(e)
             messages.error(self.request, str(e))

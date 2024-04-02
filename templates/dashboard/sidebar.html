@@ -23,17 +23,15 @@
         </p>
       </a>
       <ul class="nav nav-treeview" style="display: none">
-        {%for form in form_list%}
         <li class="nav-item">
           <a
-            href="{%url 'mentor_contact_record_form_view' id=form.id%}"
+            href="{%url 'mentor_contact_record_form_view' id=1%}"
             class="nav-link"
           >
             <i class="far fa-circle nav-icon"></i>
-            <p>{{form.title}}</p>
+            <p>MCP - Mentor Contact</p>
           </a>
         </li>
-        {%endfor%}
       </ul>
     </li>
 
@@ -46,14 +44,12 @@
         </p>
       </a>
       <ul class="nav nav-treeview" style="display: none">
-        {%for form in form_list%}
         <li class="nav-item">
-          <a href="{%url 'data_table_view' id=form.id%}" class="nav-link">
+          <a href="{%url 'data_table_view' id=1%}" class="nav-link">
             <i class="far fa-circle nav-icon"></i>
-            <p>{{form.title}}</p>
+            <p>MCP - Mentor Contact</p>
           </a>
         </li>
-        {%endfor%}
       </ul>
     </li>
   </ul>

@@ -163,7 +163,7 @@ class Field(models.Model):
 
 
 class FormFieldAnswers(models.Model):
-
+    date_added = models.DateTimeField(auto_now_add=True)
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
     section = models.ForeignKey(Sections, on_delete=models.CASCADE)
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
