@@ -201,3 +201,16 @@ class CalculatedFields(models.Model):
     field2 = models.ForeignKey(
         Field, on_delete=models.CASCADE, related_name='smaller_calculation_field')
     return_type = models.CharField(max_length=10, choices=CALCULATION_TYPES)
+
+
+class DataFilterSettings(models.Model):
+
+    """
+        Form filters are only
+        - multiple select
+        - select
+    """
+
+    form = models.OneToOneField(FormBuilder, on_delete=models.CASCADE)
+    field = models.OneToOneField(Field, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)

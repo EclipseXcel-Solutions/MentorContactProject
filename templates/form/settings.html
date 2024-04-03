@@ -1,0 +1,43 @@
+{%extends 'dashboard/base.html'%} {%block context%}
+<div class="content-wrapper">
+  <div class="row m-2 ">
+    <div class="col col-md ">
+    <div class="card">
+      <div class="card-header">Filter Settings</div>
+      <div class="card-body">
+        <div class=" form-switch">
+          {%for field in fields%}
+          <div class="row">
+            <label for="academicLevel" class="col col-md">{{field.title|truncatechars:40 }}</label>
+            <div class="col col-md">
+              <input type="checkbox" class="form-check-input " id="academicLevel">
+            </div>
+            </div>
+            {%endfor%}
+          </div>
+        </div>
+      </div>
+      </div>
+        <div class="col col-md">
+            <div class="card">
+                <div class="card-header">Table Data Display Settings</div>
+                <div class="card-body">
+                    <div class=" form-switch">
+                        {%for field in fields%}
+                        <div class="row">
+                          <label for="academicLevel" class="col col-md">{{field.title|truncatechars:40 }}</label>
+                          <div class="col col-md">
+                            <input type="checkbox" class="form-check-input " id="academicLevel">
+                          </div>
+                          </div>
+                          {%endfor%}
+                        </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+        </div>
+
+
+</div>
+{%endblock%}

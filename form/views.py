@@ -88,7 +88,7 @@ class DataTables(View):
 
         if form:
             submissions_paginator = Paginator(FormFieldAnswers.objects.values(
-                'submission_id').distinct(), 30)  # Adjust the number of items per page as needed
+                'submission_id').distinct(), 12)  # Adjust the number of items per page as needed
             page_number = request.GET.get('page')
             submissions_page = submissions_paginator.get_page(page_number)
 
@@ -161,3 +161,17 @@ class PublicView(View):
             messages.error(self.request, str(e))
 
         return redirect(reverse('public_form_view', kwargs={'id': kwargs.get('id')}))
+
+
+class Settings(View):
+
+    def get(self, request, *args, **kwargs):
+        template_name = 'form/settings.html'
+        fields = Field.objects.filter(
+            row__section__form__id=self.kwargs.get('form_id', 1))
+        context = {
+            'form_id': self.kwargs.get('form_id', 1),
+            'fields': fields
+        }
+
+        return render(request=self.request, template_name=template_name, context=context)
