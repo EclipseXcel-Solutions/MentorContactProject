@@ -87,6 +87,11 @@ class DataTables(View):
         form = FormBuilderModel.objects.filter(
             id=self.kwargs.get('id')).first()
 
+        data_table_fields = [
+            setting.field for setting in TableDataDisplaySettings.objects.filter(form=1, status=True).all().order_by('field')]
+        filter_settings = [
+            setting.field for setting in DataFilterSettings.objects.filter(form=1).all().order_by('field')]
+
         if form:
             submissions_paginator = Paginator(FormFieldAnswers.objects.values(
                 'submission_id').distinct(), 12)  # Adjust the number of items per page as needed
@@ -97,7 +102,7 @@ class DataTables(View):
             answers = FormFieldAnswers.objects.filter(
                 submission_id__in=[submission['submission_id']
                                    for submission in submissions_page],
-                field__in=[field['id'] for field in form.get_all_fields]
+                field__in=[field.id for field in data_table_fields]
             )
 
             # Organize answers by submission_id and field_id for efficient access
@@ -109,14 +114,14 @@ class DataTables(View):
             data = [
                 [
                     answers_by_submission[submission['submission_id']].get(
-                        field['id'], [])
-                    for field in form.get_all_fields
+                        field.id, [])
+                    for field in data_table_fields
                 ]
                 for submission in submissions_page
             ]
 
             context = {
-                'fields': form.get_all_fields,
+                'fields': data_table_fields,
                 'data': data,
                 'submissions_page': submissions_page
             }
