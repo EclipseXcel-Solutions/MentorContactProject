@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views import View
@@ -5,7 +6,7 @@ from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
 import json
 from django.contrib import messages
-from .models import Field, Sections, FormFieldAnswers, FormSubmission
+from .models import Field, Sections, FormFieldAnswers, FormSubmission, DataFilterSettings, TableDataDisplaySettings
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
@@ -167,11 +168,41 @@ class Settings(View):
 
     def get(self, request, *args, **kwargs):
         template_name = 'form/settings.html'
-        fields = Field.objects.filter(
-            row__section__form__id=self.kwargs.get('form_id', 1))
+        filter_fields = DataFilterSettings.objects.filter(
+            ~Q(field__input_type='checkbox'),
+            field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
+        table_fields = TableDataDisplaySettings.objects.filter(
+            field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
         context = {
             'form_id': self.kwargs.get('form_id', 1),
-            'fields': fields
+            'filter_fields': filter_fields,
+            'table_fields': table_fields
         }
 
         return render(request=self.request, template_name=template_name, context=context)
+
+    def post(self, request, *args, **kwargs):
+
+        data = request.POST
+        keys = list(data.keys())
+
+        del keys[0]
+        del keys[0]
+
+        objs = []
+
+        main_model = DataFilterSettings if data['setting_type'] == 'FILTER' else TableDataDisplaySettings
+        checked_models = main_model.objects.filter(
+            form=self.kwargs.get('form_id', 1))
+
+        for model in checked_models:
+            if str(model.id) not in keys:
+                model.status = False
+                objs.append(model)
+            else:
+                model.status = True
+                objs.append(model)
+
+        main_model.objects.bulk_update(objs, ['status'])
+
+        return redirect(reverse('form_settings_view', kwargs={'id': 1}))

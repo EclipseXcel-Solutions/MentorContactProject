@@ -1,43 +1,174 @@
 {%extends 'dashboard/base.html'%} {%block context%}
 <div class="content-wrapper">
-  <div class="row m-2 ">
-    <div class="col col-md ">
-    <div class="card">
-      <div class="card-header">Filter Settings</div>
-      <div class="card-body">
-        <div class=" form-switch">
-          {%for field in fields%}
-          <div class="row">
-            <label for="academicLevel" class="col col-md">{{field.title|truncatechars:40 }}</label>
-            <div class="col col-md">
-              <input type="checkbox" class="form-check-input " id="academicLevel">
+  <div class="content-header">
+    <div class="container-fluid">
+      <h1>Form Settings</h1>
+    </div>
+  </div>
+  <section class="content">
+    <div class="col-md-12 col-sm-6">
+      <div class="card card-primary card-outline card-outline-tabs">
+        <div class="card-header p-0 border-bottom-0">
+          <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="custom-tabs-four-home-tab"
+                data-toggle="pill"
+                href="#custom-tabs-four-home"
+                role="tab"
+                aria-controls="custom-tabs-four-home"
+                aria-selected="false"
+                >Filter Settings</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="custom-tabs-four-profile-tab"
+                data-toggle="pill"
+                href="#custom-tabs-four-profile"
+                role="tab"
+                aria-controls="custom-tabs-four-profile"
+                aria-selected="false"
+                >Table Data Settings</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="custom-tabs-four-messages-tab"
+                data-toggle="pill"
+                href="#custom-tabs-four-messages"
+                role="tab"
+                aria-controls="custom-tabs-four-messages"
+                aria-selected="false"
+                >Analytics Settings</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                id="custom-tabs-four-settings-tab"
+                data-toggle="pill"
+                href="#custom-tabs-four-settings"
+                role="tab"
+                aria-controls="custom-tabs-four-settings"
+                aria-selected="true"
+                >General</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content" id="custom-tabs-four-tabContent">
+            <div
+              class="tab-pane fade"
+              id="custom-tabs-four-home"
+              role="tabpanel"
+              aria-labelledby="custom-tabs-four-home-tab"
+            >
+              <div class="card">
+                <form method="POST">
+                  {%csrf_token%}
+                  <input
+                    type="text"
+                    name="setting_type"
+                    style="display: none"
+                    value="FILTER"
+                  />
+                  <div class="card-header">Filter Fields</div>
+                  <div class="card-body">
+                    {%for field in filter_fields%}
+                    <div class="row">
+                      <label class="col col-md"
+                        >{{field.field.title|truncatechars:40}}</label
+                      >
+                      {%if field.status == False %}
+                      <input
+                        class="col col-md form-check-input"
+                        type="checkbox"
+                        name="{{field.id}}"
+                      />
+                      {%else%}
+                      <input
+                        class="col col-md form-check-input"
+                        type="checkbox"
+                        name="{{field.id}}"
+                        checked
+                      />
+                      {%endif%}
+                    </div>
+                    {%endfor%}
+                  </div>
+                  <div class="card-footer">
+                    <button class="btn btn-success btn-sm">Save</button>
+                  </div>
+                </form>
+              </div>
             </div>
+            <div
+              class="tab-pane fade"
+              id="custom-tabs-four-profile"
+              role="tabpanel"
+              aria-labelledby="custom-tabs-four-profile-tab"
+            >
+              <div class="card">
+                <form method="POST">
+                  {%csrf_token%}
+
+                  <input
+                    type="text"
+                    name="setting_type"
+                    style="display: none"
+                    value="TABLE"
+                  />
+                  <div class="card-header">Filter Fields</div>
+                  <div class="card-body">
+                    {%for field in table_fields%}
+                    <div class="row">
+                      <label class="col col-md"
+                        >{{field.field.title|truncatechars:40}}</label
+                      >
+                      {%if field.status == False %}
+                      <input
+                        class="col col-md form-check-input"
+                        type="checkbox"
+                        name="{{field.id}}"
+                      />
+                      {%else%}
+                      <input
+                        class="col col-md form-check-input"
+                        type="checkbox"
+                        name="{{field.id}}"
+                        checked
+                      />
+                      {%endif%}
+                    </div>
+                    {%endfor%}
+                  </div>
+                  <div class="card-footer">
+                    <button class="btn btn-success btn-sm">Save</button>
+                  </div>
+                </form>
+              </div>
             </div>
-            {%endfor%}
+            <div
+              class="tab-pane fade"
+              id="custom-tabs-four-messages"
+              role="tabpanel"
+              aria-labelledby="custom-tabs-four-messages-tab"
+            ></div>
+            <div
+              class="tab-pane fade active show"
+              id="custom-tabs-four-settings"
+              role="tabpanel"
+              aria-labelledby="custom-tabs-four-settings-tab"
+            ></div>
           </div>
         </div>
       </div>
-      </div>
-        <div class="col col-md">
-            <div class="card">
-                <div class="card-header">Table Data Display Settings</div>
-                <div class="card-body">
-                    <div class=" form-switch">
-                        {%for field in fields%}
-                        <div class="row">
-                          <label for="academicLevel" class="col col-md">{{field.title|truncatechars:40 }}</label>
-                          <div class="col col-md">
-                            <input type="checkbox" class="form-check-input " id="academicLevel">
-                          </div>
-                          </div>
-                          {%endfor%}
-                        </div>
-                  </div>
-                </div>
-              </div>
-        </div>
-        </div>
-
-
+    </div>
+  </section>
 </div>
 {%endblock%}

@@ -206,11 +206,18 @@ class CalculatedFields(models.Model):
 class DataFilterSettings(models.Model):
 
     """
-        Form filters are only
+        Form filters are everything except multiple choice / checkboxes
         - multiple select
         - select
     """
 
-    form = models.OneToOneField(FormBuilder, on_delete=models.CASCADE)
+    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
+    field = models.OneToOneField(Field, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)
+
+
+class TableDataDisplaySettings(models.Model):
+
+    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     field = models.OneToOneField(Field, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
