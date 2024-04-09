@@ -4,7 +4,7 @@ from django.urls import reverse
 from form.models import FormBuilder
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from form.models import FormSubmission, FormFieldAnswers
+from form.models import FormSubmission, FiledResponses
 # Create your views here.
 
 
@@ -20,8 +20,8 @@ class Dashboard(View):
     def get(self, request):
         data = {
             'form_list': FormBuilder.objects.all(),
-            'mentoring_session':  len(FormFieldAnswers.objects.values(
-                'submission_id').distinct()),
+            'mentoring_session':  len(FiledResponses.objects.values(
+                'submission_ref').distinct()),
             'subjects': '',
 
         }

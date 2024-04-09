@@ -89,3 +89,7 @@ LOGIN_URL = '/users/login'
 LOGIN_REDIRECT_URL = '/dashboard'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000
+
+DATE_INPUT_FORMATS = [
+
+]

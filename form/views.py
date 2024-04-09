@@ -1,3 +1,4 @@
+import random
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -6,13 +7,16 @@ from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
 import json
 from django.contrib import messages
-from .models import Field, Sections, FormFieldAnswers, FormSubmission, DataFilterSettings, TableDataDisplaySettings
+from .models import Field, Sections, FormFieldAnswers, FormSubmission, FiledResponses, DataFilterSettings, TableDataDisplaySettings
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db.models.expressions import RawSQL
 from django.db.models import BooleanField
 from django.db.models.functions import Cast
+from datetime import datetime
+from django.utils.dateparse import parse_date
+
 # Create your views here.
 
 
@@ -43,10 +47,10 @@ class DataImportView(View):
     def get(self, request, *args, **kwargs):
         self.form_id = self.kwargs.get('id')
         form = FormBuilderModel.objects.filter(id=self.form_id).first()
-        print(form)
+        SYSTEM_DATE_ID = 0
         if form:
             context = {
-                'fields': form.get_all_fields
+                'fields': [{'id': SYSTEM_DATE_ID, 'title': 'System Date'}] + form.get_all_fields
             }
             return render(request=request, template_name='form/dataImortForm.html', context=context)
         else:
@@ -65,66 +69,84 @@ class DataImportView(View):
         data = json.loads(request.body)
         sections = self.get_sections(data[0])
         prepared_data = []
+
         for fields in data:
-            submission_id = uuid.uuid4()
+            date_field_value = None
             for field in fields:
-                prepared_data.append(FormFieldAnswers(
-                    form=sections[field['field']].row.section.form,
-                    field=sections[field['field']],
-                    submission_id=submission_id,
-                    section=sections[field['field']].row.section,
-                    answer=None,
-                    array_answer=field['array_answer']
-                ))
+                if field['field'] == 0:
+                    # Assumes 'array_answer' is properly structured.
+                    date_field_value = field['array_answer'][0][0]
+                    break
 
-        print(prepared_data[0])
+            if date_field_value:
+                submission, created = FormSubmission.objects.get_or_create(
+                    date=datetime.strptime(date_field_value, '%m/%d/%Y'),
+                    form=FormBuilderModel.objects.filter(
+                        id=self.form_id).first(),
+                    submission_id=uuid.uuid4()
+                )
+            if submission:
+                for field in fields:
+                    if field['field'] != 0:
+                        prepared_data.append(FiledResponses(
+                            form=sections[field['field']].row.section.form,
+                            field=sections[field['field']],
+                            submission_ref=submission,
+                            section=sections[field['field']].row.section,
+                            answer=None,
+                            array_answer=field['array_answer']
+                        ))
 
-        form_answers = FormFieldAnswers.objects.bulk_create(prepared_data)
-
+        form_answers = FiledResponses.objects.bulk_create(prepared_data)
         return JsonResponse(data={'message': 'all good'})
 
 
 class DataTables(View):
     def get(self, request, *args, **kwargs):
 
+        # Assuming form retrieval remains the same
         form = FormBuilderModel.objects.filter(
             id=self.kwargs.get('id')).first()
 
         query: str = self.request.GET.get('query', '')
-        if query != None and query.strip() != '':
+        if query is not None and query.strip() != '':
             print(query)
 
+        # Retrieval of fields for the data table display and filter settings remains unchanged
         data_table_fields = [
             setting.field for setting in TableDataDisplaySettings.objects.filter(form=1, status=True).all().order_by('field')]
         filter_settings = [
             setting.field for setting in DataFilterSettings.objects.filter(form=1, status=True).all().order_by('field')]
 
         if form:
-            submissions_paginator = Paginator(FormFieldAnswers.objects.annotate(
+            # Adjusting FiledResponses query to work with submission_ref as a model
+            submissions_paginator = Paginator(FiledResponses.objects.annotate(
                 matches=RawSQL(
                     "SELECT EXISTS(SELECT 1 FROM unnest(array_answer) AS s WHERE s ILIKE %s)",
                     ('%' + query + '%',)
                 )
-            ).filter(matches=True).values('submission_id').distinct(), 10)  # Adjust the number of items per page as needed
-            page_number = request.GET.get('page')
+            ).filter(matches=True).values('submission_ref_id').distinct(), 10)  # Note the change to 'submission_ref_id' for distinct values
+
+            page_number = self.request.GET.get('page')
             submissions_page = submissions_paginator.get_page(page_number)
 
-            # Prefetch all relevant FormFieldAnswers in a single query
-            answers = FormFieldAnswers.objects.filter(
-                submission_id__in=[submission['submission_id']
-                                   for submission in submissions_page],
+            # Adjusting FiledResponses query for prefetching FormFieldAnswers
+            answers = FiledResponses.objects.filter(
+                submission_ref_id__in=[submission['submission_ref_id']
+                                       for submission in submissions_page],
                 field__in=[field.id for field in data_table_fields]
             )
 
-            # Organize answers by submission_id and field_id for efficient access
+            # Adjusting organization of answers by submission_id for model change
             answers_by_submission = {
-                submission['submission_id']: {} for submission in submissions_page}
+                submission['submission_ref_id']: {} for submission in submissions_page}
             for answer in answers:
-                answers_by_submission[answer.submission_id][answer.field_id] = answer.array_answer
+                # Assuming submission_ref has a submission_id field or equivalent unique identifier
+                answers_by_submission[answer.submission_ref_id][answer.field_id] = answer.array_answer
 
             data = [
                 [
-                    answers_by_submission[submission['submission_id']].get(
+                    answers_by_submission[submission['submission_ref_id']].get(
                         field.id, [])
                     for field in data_table_fields
                 ]

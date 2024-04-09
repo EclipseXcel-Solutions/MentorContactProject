@@ -45,7 +45,7 @@ class FormBuilder(models.Model):
 
 class FormSubmission(models.Model):
 
-    date_time = models.DateTimeField(auto_now_add=True)
+    date = models.DateField()
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     submission_id = models.UUIDField(default=uuid.uuid4)
 
@@ -162,13 +162,34 @@ class Field(models.Model):
         return self.title
 
 
-class FormFieldAnswers(models.Model):
-    date_added = models.DateTimeField(auto_now_add=True)
+class FiledResponses(models.Model):
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
     section = models.ForeignKey(Sections, on_delete=models.CASCADE)
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     answer = models.TextField(null=True, blank=True)
-    submission_id = models.UUIDField()
+    submission_ref = models.ForeignKey(
+        FormSubmission, on_delete=models.CASCADE)
+    array_answer = ArrayField(
+        ArrayField(
+            models.CharField(max_length=100, blank=True, null=True),
+            size=20,
+            blank=True,
+        ),
+        blank=True,
+        size=20,
+    )
+
+    def __str__(self) -> str:
+        return self.field.title
+
+
+class FormFieldAnswers(models.Model):
+    field = models.ForeignKey(Field, on_delete=models.CASCADE)
+    section = models.ForeignKey(Sections, on_delete=models.CASCADE)
+    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
+    answer = models.TextField(null=True, blank=True)
+    submission_ref = models.ForeignKey(
+        FormSubmission, on_delete=models.SET_NULL, null=True, blank=True)
     array_answer = ArrayField(
         ArrayField(
             models.CharField(max_length=100, blank=True, null=True),
