@@ -158,7 +158,36 @@
               id="custom-tabs-four-messages"
               role="tabpanel"
               aria-labelledby="custom-tabs-four-messages-tab"
-            ></div>
+            >
+              <form>
+                <div class="form-group">
+                  <label>Field Title</label>
+                  <input
+                    type="text"
+                    placeholder="Eg. Time Studied"
+                    class="form-control"
+                  />
+                  </div>
+                  <div class="form-group">
+                    <label>Field 1</label>
+                    <select class="form-control">
+                      {%for field in table_fields%}
+                      <option>{{field.field.title}}</option>
+                      {%endfor%}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Field 2</label>
+                    <select class="form-control">
+                      {%for field in table_fields%}
+                      <option>{{field.field.title}}</option>
+                      {%endfor%}
+                    </select>
+                  </div>
+                  <button id="calculated_field_creation_btn" class="btn btn-success">Save</button>
+                </div>
+              </form>
+            </div>
             <div
               class="tab-pane fade active show"
               id="custom-tabs-four-settings"
@@ -171,4 +200,12 @@
     </div>
   </section>
 </div>
+<script>
+const btn = document.getElementById('calculated_field_creation_btn')
+btn.addEventListener('click',function(){
+    
+    alert('Btn was clicked')
+})
+
+</script>
 {%endblock%}

@@ -10,7 +10,9 @@ from .models import Field, Sections, FormFieldAnswers, FormSubmission, DataFilte
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
-
+from django.db.models.expressions import RawSQL
+from django.db.models import BooleanField
+from django.db.models.functions import Cast
 # Create your views here.
 
 
@@ -84,17 +86,26 @@ class DataImportView(View):
 
 class DataTables(View):
     def get(self, request, *args, **kwargs):
+
         form = FormBuilderModel.objects.filter(
             id=self.kwargs.get('id')).first()
+
+        query: str = self.request.GET.get('query', '')
+        if query != None and query.strip() != '':
+            print(query)
 
         data_table_fields = [
             setting.field for setting in TableDataDisplaySettings.objects.filter(form=1, status=True).all().order_by('field')]
         filter_settings = [
-            setting.field for setting in DataFilterSettings.objects.filter(form=1).all().order_by('field')]
+            setting.field for setting in DataFilterSettings.objects.filter(form=1, status=True).all().order_by('field')]
 
         if form:
-            submissions_paginator = Paginator(FormFieldAnswers.objects.values(
-                'submission_id').distinct(), 12)  # Adjust the number of items per page as needed
+            submissions_paginator = Paginator(FormFieldAnswers.objects.annotate(
+                matches=RawSQL(
+                    "SELECT EXISTS(SELECT 1 FROM unnest(array_answer) AS s WHERE s ILIKE %s)",
+                    ('%' + query + '%',)
+                )
+            ).filter(matches=True).values('submission_id').distinct(), 10)  # Adjust the number of items per page as needed
             page_number = request.GET.get('page')
             submissions_page = submissions_paginator.get_page(page_number)
 
@@ -123,6 +134,7 @@ class DataTables(View):
             context = {
                 'fields': data_table_fields,
                 'data': data,
+                'filter_fields': filter_settings,
                 'submissions_page': submissions_page
             }
             return render(request=request, template_name='form/dataTable.html', context=context)
