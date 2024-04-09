@@ -5,6 +5,7 @@ from form.models import FormBuilder
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from form.models import FormSubmission, FiledResponses
+from django.contrib.auth.models import User
 # Create your views here.
 
 
@@ -22,6 +23,7 @@ class Dashboard(View):
             'form_list': FormBuilder.objects.all(),
             'mentoring_session':  len(FiledResponses.objects.values(
                 'submission_ref').distinct()),
+            'total_users': len(User.objects.all()),
             'subjects': '',
 
         }
