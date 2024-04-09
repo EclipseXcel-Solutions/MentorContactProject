@@ -150,56 +150,59 @@
   const chartWeekly = document.getElementById("chart-weekly");
   const chartMonthly = document.getElementById("chart-monthly");
   const chartYearly = document.getElementById("chart-yearly");
+  new Chart(chartWeekly, {
+    type: "line",
+    data: {
+      labels: JSON.parse("{{submissions.weekly.y_axis}}"),
+      datasets: [
+        {
+          label: "Weekly Mentoring Sessions",
+          data: JSON.parse("{{submissions.weekly.x_axis}}"),
+          borderWidth: 1,
+          fill: true,
+          tension: 0.5,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: false,
+        },
+      },
+    },
+  });
+  new Chart(chartDaily, {
+    type: "line",
+    data: {
+      labels: JSON.parse("{{submissions.daily.y_axis}}"),
+      datasets: [
+        {
+          label: "Daily Mentoring Sessions",
+          data: JSON.parse("{{submissions.daily.x_axis}}"),
+          borderWidth: 1,
+          tension: 0.6,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: false,
+        },
+      },
+    },
+  });
   new Chart(chartQuarterly, {
     type: "line",
     data: {
       labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
       datasets: [
         {
-          label: "Weekly Mentoring Sessions",
-          data: [3, 2, 5, 3, 19, 12],
-          borderWidth: 1,
-          fill: true,
-        },
-      ],
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true,
-        },
-      },
-    },
-  });
-  new Chart(chartDaily, {
-    type: "bar",
-    data: {
-      labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-      datasets: [
-        {
-          label: "Weekly Mentoring Sessions",
+          label: "Quartely Mentoring Sessions",
           data: [12, 19, 3, 5, 2, 3],
           borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true,
-        },
-      },
-    },
-  });
-  new Chart(chartWeekly, {
-    type: "line",
-    data: {
-      labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-      datasets: [
-        {
-          label: "Weekly Mentoring Sessions",
-          data: [12, 19, 3, 5, 2, 3],
-          borderWidth: 1,
+          tension: 0.8,
         },
       ],
     },
@@ -215,18 +218,14 @@
   new Chart(chartMonthly, {
     type: "bar",
     data: {
-      labels: [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-        21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-      ],
+      labels: JSON.parse("{{submissions.monthly.y_axis}}"),
       datasets: [
         {
           label: "Monthly Mentoring Sessions",
-          data: [
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-            20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-          ],
+          data: JSON.parse("{{submissions.monthly.x_axis}}"),
           borderWidth: 1,
+          fill: true,
+          backgroundColor: "rgba(255, 127, 80, 0.6)",
         },
       ],
     },
