@@ -178,27 +178,31 @@ class PublicView(View):
 
         del keys[0]
         form_data_object_list = []
-        submission = uuid.uuid4()
-        for key in keys:
-            value = data[key]
-            form_essentials = key.split("-")
-            list_ans = value
+        submission, created = FormSubmission.objects.get_or_create(
+            date=datetime.today().date(), submission_id=uuid.uuid4(), form=FormBuilderModel.objects.filter(
+                id=kwargs.get('id')
+            ).first())
+        if created:
+            for key in keys:
+                value = data[key]
+                form_essentials = key.split("-")
+                list_ans = value
 
-            form_data_object_list.append(FormFieldAnswers(
-                field=Field.objects.get(id=form_essentials[0]),
-                section=Sections.objects.get(id=form_essentials[1]),
-                form=FormBuilderModel.objects.get(id=form_essentials[2]),
-                array_answer=list_ans,
-                answer='',
-                submission_id=submission
-            ))
+                form_data_object_list.append(FiledResponses(
+                    field=Field.objects.get(id=form_essentials[0]),
+                    section=Sections.objects.get(id=form_essentials[1]),
+                    form=FormBuilderModel.objects.get(id=form_essentials[2]),
+                    array_answer=list_ans,
+                    answer='',
+                    submission_ref=submission
+                ))
 
-        try:
-            FormFieldAnswers.objects.bulk_create(form_data_object_list)
-            print('data saved')
-        except Exception as e:
-            print(e)
-            messages.error(self.request, str(e))
+            try:
+                FiledResponses.objects.bulk_create(form_data_object_list)
+                print('data saved')
+            except Exception as e:
+                print(e)
+                messages.error(self.request, str(e))
 
         return redirect(reverse('public_form_view', kwargs={'id': kwargs.get('id')}))
 
