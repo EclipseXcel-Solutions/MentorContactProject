@@ -10,23 +10,34 @@
           <h1 class="m-0">Dashboard</h1>
         </div>
         <!-- /.col -->
-        <form method="GET" class="col-sm-6">
+        <div class="col-sm-6">
           <div class="row">
             <div class="col input-group input-group-sm">
-              <select name="month" class="form-control" type="text">
+              <select class="form-control" type="text">
+                <option>Week</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+              </select>
+            </div>
+            <div class="col input-group input-group-sm">
+              <select class="form-control" type="text">
                 <option>Month</option>
-                {%for month in months%}
-                <option value="{{month}}">{{month}}</option>
-                {%endfor%}
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
               </select>
             </div>
 
             <div class="col input-group input-group-sm">
-              <select name="year" class="form-control" type="text">
+              <select class="form-control" type="text">
                 <option>Year</option>
-                {%for year in years%}
-                <option value="{{year.year.year}}">{{year.year.year}}</option>
-                {%endfor%}
+                <option></option>
+                <option></option>
+                <option></option>
+                <option></option>
               </select>
             </div>
             <div class="col input-group input-group-sm">
@@ -35,7 +46,7 @@
               </button>
             </div>
           </div>
-        </form>
+        </div>
         <!-- /.col -->
       </div>
       <!-- /.row -->
@@ -213,13 +224,13 @@
     },
   });
   new Chart(chartQuarterly, {
-    type: "bar",
+    type: "line",
     data: {
-      labels: JSON.parse("{{submissions.quarterly.y_axis}}"),
+      labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
       datasets: [
         {
           label: "Quartely Mentoring Sessions",
-          data: JSON.parse("{{submissions.quarterly.x_axis}}"),
+          data: [12, 19, 3, 5, 2, 3],
           borderWidth: 1,
           tension: 0.8,
         },
@@ -259,11 +270,24 @@
   new Chart(chartYearly, {
     type: "polarArea",
     data: {
-      labels: JSON.parse("{{submissions.yearly.y_axis}}"),
+      labels: [
+        "Jan",
+        "Feb",
+        "March",
+        "April",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sept",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
       datasets: [
         {
           label: "Yearly Mentoring Sessions",
-          data: JSON.parse("{{submissions.yearly.x_axis}}"),
+          data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
           borderWidth: 1,
         },
       ],

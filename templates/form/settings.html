@@ -159,34 +159,45 @@
               role="tabpanel"
               aria-labelledby="custom-tabs-four-messages-tab"
             >
-              <form>
-                <div class="form-group">
-                  <label>Field Title</label>
+              <div class="card">
+                <form method="POST">
+                  {%csrf_token%}
+
                   <input
                     type="text"
-                    placeholder="Eg. Time Studied"
-                    class="form-control"
+                    name="setting_type"
+                    style="display: none"
+                    value="ANALYTICS"
                   />
+                  <div class="card-header">Analytics Fields</div>
+                  <div class="card-body">
+                    {%for field in analytics%}
+                    <div class="row">
+                      <label class="col col-md"
+                        >{{field.field.title|truncatechars:40}}</label
+                      >
+                      {%if field.status == False %}
+                      <input
+                        class="col col-md form-check-input"
+                        type="checkbox"
+                        name="{{field.id}}"
+                      />
+                      {%else%}
+                      <input
+                        class="col col-md form-check-input"
+                        type="checkbox"
+                        name="{{field.id}}"
+                        checked
+                      />
+                      {%endif%}
+                    </div>
+                    {%endfor%}
                   </div>
-                  <div class="form-group">
-                    <label>Field 1</label>
-                    <select class="form-control">
-                      {%for field in table_fields%}
-                      <option>{{field.field.title}}</option>
-                      {%endfor%}
-                    </select>
+                  <div class="card-footer">
+                    <button class="btn btn-success btn-sm">Save</button>
                   </div>
-                  <div class="form-group">
-                    <label>Field 2</label>
-                    <select class="form-control">
-                      {%for field in table_fields%}
-                      <option>{{field.field.title}}</option>
-                      {%endfor%}
-                    </select>
-                  </div>
-                  <button id="calculated_field_creation_btn" class="btn btn-success">Save</button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
             <div
               class="tab-pane fade active show"
@@ -201,11 +212,9 @@
   </section>
 </div>
 <script>
-const btn = document.getElementById('calculated_field_creation_btn')
-btn.addEventListener('click',function(){
-    
-    alert('Btn was clicked')
-})
-
+  const btn = document.getElementById("calculated_field_creation_btn");
+  btn.addEventListener("click", function () {
+    alert("Btn was clicked");
+  });
 </script>
 {%endblock%}

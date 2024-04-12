@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='datafiltersettings',
             name='form',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='form.formbuilder'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to='form.formbuilder'),
         ),
     ]

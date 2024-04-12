@@ -242,3 +242,9 @@ class TableDataDisplaySettings(models.Model):
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     field = models.OneToOneField(Field, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
+
+
+class AnalyticsFieldsSettings(models.Model):
+    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
+    field = models.OneToOneField(Field, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)

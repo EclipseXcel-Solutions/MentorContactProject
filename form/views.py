@@ -7,7 +7,7 @@ from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
 import json
 from django.contrib import messages
-from .models import Field, Sections, FormFieldAnswers, FormSubmission, FiledResponses, DataFilterSettings, TableDataDisplaySettings
+from .models import Field, Sections, FormFieldAnswers, FormSubmission, FiledResponses, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
@@ -212,10 +212,13 @@ class Settings(View):
             field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
         table_fields = TableDataDisplaySettings.objects.filter(
             field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
+        analytics = AnalyticsFieldsSettings.objects.filter(
+            field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
         context = {
             'form_id': self.kwargs.get('form_id', 1),
             'filter_fields': filter_fields,
-            'table_fields': table_fields
+            'table_fields': table_fields,
+            'analytics': analytics
         }
 
         return render(request=self.request, template_name=template_name, context=context)
@@ -230,7 +233,15 @@ class Settings(View):
 
         objs = []
 
-        main_model = DataFilterSettings if data['setting_type'] == 'FILTER' else TableDataDisplaySettings
+        main_model = None
+
+        if data['setting_type'] == 'FILTER':
+            main_model = DataFilterSettings
+        elif data['setting_type'] == 'TABLE':
+            main_model = TableDataDisplaySettings
+        else:
+            main_model = AnalyticsFieldsSettings
+
         checked_models = main_model.objects.filter(
             form=self.kwargs.get('form_id', 1))
 

@@ -1,7 +1,8 @@
 
 from django.contrib import admin
 from .models import FormBuilder, Sections
-from .models import Field, Row, FormFieldAnswers, FormSubmission, CalculatedFields, DataFilterSettings, TableDataDisplaySettings, FiledResponses
+from .models import (Field, Row, FormFieldAnswers, FormSubmission, CalculatedFields,
+                     DataFilterSettings, TableDataDisplaySettings, FiledResponses, AnalyticsFieldsSettings)
 # Register your models here.
 
 admin.site.register(FormBuilder)
@@ -14,3 +15,4 @@ admin.site.register(DataFilterSettings)
 admin.site.register(CalculatedFields)
 admin.site.register(TableDataDisplaySettings)
 admin.site.register(FiledResponses)
+admin.site.register(AnalyticsFieldsSettings)
