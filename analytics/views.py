@@ -30,7 +30,7 @@ class Dashboard(View):
         month = self.request.GET.get('month', datetime.now().month)
 
         yearly_submissions = (
-            FormSubmission.objects.filter(date__year=year)
+            FormSubmission.objects
             .annotate(year=TruncYear('date'))
             .values('year')
             .annotate(submissions_count=Count('id'))

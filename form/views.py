@@ -199,10 +199,13 @@ class PublicView(View):
 
             try:
                 FiledResponses.objects.bulk_create(form_data_object_list)
-                print('data saved')
+                messages.success(
+                    request, 'Whoa !! Your entry has been recorded.')
             except Exception as e:
                 print(e)
                 messages.error(self.request, str(e))
+                messages.error(
+                    request, 'Sorry , There was a problem while saving your data')
 
         return redirect(reverse('public_form_view', kwargs={'id': kwargs.get('id')}))
 

@@ -8,6 +8,8 @@
     {%block head%} {%endblock%}
     <script src="{% static 'dist/js/papaparse.min.js' %}"></script>
     <script src="https://cdnjs.com/libraries/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Google Font: Source Sans Pro -->
     <link
       rel="stylesheet"
@@ -205,8 +207,16 @@
         </div>
         <!-- /.sidebar -->
       </aside>
-
-      {%block context%} {%endblock%}
+      {%for message in messages%}
+      <script>
+        Swal.fire({
+          title: "{{message.type}}",
+          text: "{{message}}",
+          icon: "{{message.tags}}",
+          confirmButtonText: "Ok",
+        });
+      </script>
+      {%endfor%} {%block context%} {%endblock%}
     </div>
   </body>
   <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
