@@ -11,6 +11,8 @@ from django.db.models import Count
 from django.db.models.functions import TruncWeek, TruncMonth, TruncDay, TruncYear, TruncQuarter
 import calendar
 from django.db.models import Count
+from collections import defaultdict
+import json
 
 
 # Create your views here.
@@ -111,16 +113,40 @@ class Dashboard(View):
 class FieldAnalytics(View):
 
     def get(self, request, *args, **kwargs):
-        field = Field.objects.filter(id=self.kwargs.get('id')).first()
-        choices = field.choices
-        print(choices)
+        year = self.request.GET.get('year', datetime.now().year)
+        month = self.request.GET.get('month', datetime.now().month)
+        field = Field.objects.filter(id=self.kwargs.get(
+            'id')).first()
+        total_responses = FiledResponses.objects.filter(
+            field=field, submission_ref__date__year=year, submission_ref__date__month=month).values('array_answer').annotate(count=Count('array_answer'))
+
+        daily_submissions = [FiledResponses.objects.filter(
+            field=field,
+            array_answer=x['array_answer'],
+            submission_ref__date__year=year, submission_ref__date__month=month)
+            .annotate(day=TruncDay('submission_ref__date'))
+            .values('day', 'array_answer')
+            .annotate(count=Count('array_answer'))
+            .order_by('day') for x in total_responses]
+
         context = {
-            'analytics': AnalyticsFieldsSettings.objects.filter(form__id=1, status=True)
+            'analytics': AnalyticsFieldsSettings.objects.filter(form__id=1, status=True),
+            'field': field,
+            'total_responses': total_responses,
+            'total': 0,
+            'line_chart': [],
+            'submissions': json.dumps({
+                'daily': [
+                    {
+                        'x': [sub['day'].day for sub in x],
+                        'y': [sub['count'] for sub in x],
+                    } for x in daily_submissions
+                ],
+            }),
+            'years': FormSubmission.objects.annotate(
+                year=TruncYear('date')).values('year').distinct('year'),
+            'months': [x for x in range(1, 13)],
+            'weeks': [x for x in range(1, 5)],
         }
 
-        for choice in choices:
-            context[choice[0]] = [field.array_answer for field in FiledResponses.objects.filter(
-                field=field)]
-
-        print(context)
         return render(request, 'analytics/fieldStat.html', context)
