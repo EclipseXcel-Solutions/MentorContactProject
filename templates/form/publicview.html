@@ -17,6 +17,9 @@
       {%for field in row.fields%} {%if field.input_type == 'select'%} 
       <div class="form-group col-md">
           <label>{{field.title}}</label>
+          
+          <label>{{field}}</label>
+
           <select name="{{field.id}}-{{section.id}}-{{form.id}}" id="cars" class="form-control" required>
             {%for choice in field.choices%}
             {%for c in choice%}
@@ -28,6 +31,7 @@
         {% elif field.input_type == 'checkbox' %}
         <div class="form-group col-md">
             <label>{{field.title}}</label>
+
             <div class="row">
             {%for choice in field.choices%}
                 {%for ch in choice%}

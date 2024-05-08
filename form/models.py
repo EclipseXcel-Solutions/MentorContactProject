@@ -155,6 +155,10 @@ class Field(models.Model):
             'choices': self.choices,
             "input_name": self.input_name,
             'date_field_choices': self.date_type,
+            "model_choices": [{
+                'title': choice.choice_title,
+                'key': choice.choice_id
+            } for choice in self.field_choices.all()]
 
         }
 
@@ -252,7 +256,8 @@ class AnalyticsFieldsSettings(models.Model):
 
 class ChoiceModel(models.Model):
 
-    choice_for = models.ForeignKey(Field, on_delete=models.CASCADE)
+    choice_for = models.ForeignKey(
+        Field, on_delete=models.CASCADE, related_name='field_choices')
     choice_title = models.CharField(max_length=200)
     choice_id = models.IntegerField()
 
