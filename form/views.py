@@ -7,7 +7,7 @@ from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
 import json
 from django.contrib import messages
-from .models import Field, Sections, FormFieldAnswers, FormSubmission, FiledResponses, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings
+from .models import Field, Sections, FormFieldAnswers, FormSubmission, FiledResponses, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings, ChoiceModel
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
@@ -221,11 +221,15 @@ class Settings(View):
             field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
         analytics = AnalyticsFieldsSettings.objects.filter(
             field__row__section__form__id=self.kwargs.get('form_id', 1)).order_by('field')
+        fields = Field.objects.filter(Q(input_type='checkbox') | Q(
+            input_type='select'), row__section__form__id=self.kwargs.get('form_id', 1))
+
         context = {
             'form_id': self.kwargs.get('form_id', 1),
             'filter_fields': filter_fields,
             'table_fields': table_fields,
-            'analytics': analytics
+            'analytics': analytics,
+            'fields': fields
         }
 
         return render(request=self.request, template_name=template_name, context=context)
