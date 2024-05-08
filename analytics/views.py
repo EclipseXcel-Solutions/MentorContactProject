@@ -128,6 +128,30 @@ class FieldAnalytics(View):
             .values('day', 'array_answer')
             .annotate(count=Count('array_answer'))
             .order_by('day') for x in total_responses]
+        monthly_submissions = [FiledResponses.objects.filter(
+            field=field,
+            array_answer=x['array_answer'],
+            submission_ref__date__year=year, submission_ref__date__month=month)
+            .annotate(month=TruncMonth('submission_ref__date'))
+            .values('month', 'array_answer')
+            .annotate(count=Count('array_answer'))
+            .order_by('month') for x in total_responses]
+        weekly_submissions = [FiledResponses.objects.filter(
+            field=field,
+            array_answer=x['array_answer'],
+            submission_ref__date__year=year, submission_ref__date__month=month)
+            .annotate(week=TruncWeek('submission_ref__date'))
+            .values('week', 'array_answer',)
+            .annotate(count=Count('array_answer'))
+            .order_by('week') for x in total_responses]
+
+        yearly_submissions = [FiledResponses.objects.filter(
+            field=field,
+            array_answer=x['array_answer'])
+            .annotate(year=TruncWeek('submission_ref__date'))
+            .values('year', 'array_answer')
+            .annotate(count=Count('array_answer'))
+            .order_by('year') for x in total_responses]
 
         context = {
             'analytics': AnalyticsFieldsSettings.objects.filter(form__id=1, status=True),
@@ -140,7 +164,30 @@ class FieldAnalytics(View):
                     {
                         'x': [sub['day'].day for sub in x],
                         'y': [sub['count'] for sub in x],
+                        'name': x[0]['array_answer'],
                     } for x in daily_submissions
+                ],
+                'monthly': [
+                    {
+                        'x': [sub['month'].month for sub in x],
+                        'y': [sub['count'] for sub in x],
+                        'name': x[0]['array_answer'],
+                    } for x in monthly_submissions
+                ],
+                'weekly': [
+                    {
+                        'x': [sub['week'].isocalendar().week for sub in x],
+                        'y': [sub['count'] for sub in x],
+                        'name': x[0]['array_answer'],
+
+                    } for x in weekly_submissions
+                ],
+                'yearly': [
+                    {
+                        'x': [sub['year'].year for sub in x],
+                        'y': [sub['count'] for sub in x],
+                        'name': x[0]['array_answer'],
+                    } for x in yearly_submissions
                 ],
             }),
             'years': FormSubmission.objects.annotate(
@@ -148,5 +195,6 @@ class FieldAnalytics(View):
             'months': [x for x in range(1, 13)],
             'weeks': [x for x in range(1, 5)],
         }
+        print(context)
 
         return render(request, 'analytics/fieldStat.html', context)

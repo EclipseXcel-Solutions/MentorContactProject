@@ -248,3 +248,13 @@ class AnalyticsFieldsSettings(models.Model):
     form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     field = models.OneToOneField(Field, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
+
+
+class ChoiceModel(models.Model):
+
+    choice_for = models.ForeignKey(Field, on_delete=models.CASCADE)
+    choice_title = models.CharField(max_length=200)
+    choice_id = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.choice_for.title}:field - { self.choice_title }:value'
