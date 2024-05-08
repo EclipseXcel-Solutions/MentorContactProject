@@ -152,7 +152,6 @@ class Field(models.Model):
             'placeholder': self.placeholder,
             'input_type': self.input_type,
             'is_multiple_choice': self.is_multiple_choice,
-            'choices': self.choices,
             "input_name": self.input_name,
             'date_field_choices': self.date_type,
             "model_choices": [{

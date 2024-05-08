@@ -17,14 +17,9 @@
       {%for field in row.fields%} {%if field.input_type == 'select'%} 
       <div class="form-group col-md">
           <label>{{field.title}}</label>
-          
-          <label>{{field}}</label>
-
           <select name="{{field.id}}-{{section.id}}-{{form.id}}" id="cars" class="form-control" required>
-            {%for choice in field.choices%}
-            {%for c in choice%}
-            <option value="{{c}}">{{c}}</option>
-            {%endfor%}
+            {%for choice in field.model_choices%}
+            <option value="{{choice.key}}">{{choice.title}}</option>
             {%endfor%}
           </select>
         </div>
@@ -33,13 +28,11 @@
             <label>{{field.title}}</label>
 
             <div class="row">
-            {%for choice in field.choices%}
-                {%for ch in choice%}
+            {%for choice in field.model_choices%}
                 <div class="col-md-3"> 
-                    <input class type="checkbox" id="coding" name="{{field.id}}-{{section.id}}-{{form.id}}" value="{{ch}}"/>
-                    <span>{{ch}}</span>
+                    <input class type="checkbox" id="coding" name="{{field.id}}-{{section.id}}-{{form.id}}" value="{{choice.key}}"/>
+                    <span>{{choice.title}}</span>
                     </div>
-                {%endfor%}
             {%endfor%}
             </div>
                 </div>
