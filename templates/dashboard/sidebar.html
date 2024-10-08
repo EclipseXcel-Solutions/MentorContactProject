@@ -8,32 +8,13 @@
     <!-- Add icons to the links using the .nav-icon class
              with font-awesome or any other icon font library -->
     <li class="nav-item">
-      <a href="{%url 'admin_dashboard'%}" class="nav-link">
+      <a
+        href="{%url 'admin_dashboard' request.session.selected_form_id %}"
+        class="nav-link"
+      >
         <i class="nav-icon fas fa-tachometer-alt"></i>
         <p>Dashboard</p>
       </a>
-    </li>
-    <li class="nav-item">
-      <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-chart-line"></i>
-        <p>
-          Analytics
-          <i class="fas fa-angle-left right"></i>
-        </p>
-      </a>
-      <ul class="nav nav-treeview" style="display: none">
-        {%for field in analytics%}
-        <li class="nav-item">
-          <a
-            href="{%url 'field_analytics_view' id=field.field.id%}"
-            class="nav-link"
-          >
-            <i class="far fa-circle nav-icon"></i>
-            <p>{{field.field.title}}</p>
-          </a>
-        </li>
-        {%endfor%}
-      </ul>
     </li>
 
     <li class="nav-item">
@@ -47,13 +28,65 @@
       <ul class="nav nav-treeview" style="display: none">
         <li class="nav-item">
           <a
-            href="{%url 'mentor_contact_record_form_view' id=1%}"
+            href="{%url 'public_form_view' request.session.selected_form_id%}"
             class="nav-link"
           >
             <i class="far fa-circle nav-icon"></i>
-            <p>MCP - Mentor Contact</p>
+            <p>View</p>
           </a>
         </li>
+        <li class="nav-item">
+          <a
+            href="{%url 'form_section_view' request.session.selected_form_id%}"
+            class="nav-link"
+          >
+            <i class="far fa-circle nav-icon"></i>
+            <p>Edit</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="{%url 'form_section_view' request.session.selected_form_id%}"
+            class="nav-link"
+          >
+            <i class="far fa-circle nav-icon"></i>
+            <p>Customize</p>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link">
+        <i class="nav-icon fas fa-chart-line"></i>
+        <p>
+          Analytics
+          <i class="fas fa-angle-left right"></i>
+        </p>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-table"></i>
+        <p>
+          Field Analytics
+          <i class="fas fa-angle-left right"></i>
+        </p>
+      </a>
+      <ul class="nav nav-treeview" style="display: none">
+        {%for field in request.session.fields%}
+
+        <li class="nav-item">
+          <a
+            href="{%url 'reports_view' field_id=field.id  form=request.session.selected_form_id%}"
+            class="nav-link"
+          >
+            <i class="far fa-circle nav-icon"></i>
+            <p>{{field.name}}</p>
+          </a>
+        </li>
+        {%endfor%}
       </ul>
     </li>
 
@@ -67,7 +100,10 @@
       </a>
       <ul class="nav nav-treeview" style="display: none">
         <li class="nav-item">
-          <a href="{%url 'data_table_view' id=1%}" class="nav-link">
+          <a
+            href="{%url 'data_table_view' request.session.selected_form_id%}"
+            class="nav-link"
+          >
             <i class="far fa-circle nav-icon"></i>
             <p>MCP - Mentor Contact</p>
           </a>
@@ -84,9 +120,39 @@
       </a>
       <ul class="nav nav-treeview" style="display: none">
         <li class="nav-item">
-          <a href="{%url 'form_settings_view' id=1%}" class="nav-link">
+          <a
+            href="{%url 'table_data_display_settings_view' 'GET' request.session.selected_form_id%}"
+            class="nav-link"
+          >
             <i class="far fa-circle nav-icon"></i>
-            <p>MCP - Mentor Contact</p>
+            <p>Table Data Display</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="{%url 'table_data_filter_settings_view' 'GET' request.session.selected_form_id%}"
+            class="nav-link"
+          >
+            <i class="far fa-circle nav-icon"></i>
+            <p>Table Data Filter</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="{%url 'table_data_calculation_settings_view' 'GET' request.session.selected_form_id%}"
+            class="nav-link"
+          >
+            <i class="far fa-circle nav-icon"></i>
+            <p>Table Data Calculation</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="{%url 'field_analytics' 'GET' request.session.selected_form_id%}"
+            class="nav-link"
+          >
+            <i class="far fa-circle nav-icon"></i>
+            <p>Field Analytics</p>
           </a>
         </li>
       </ul>

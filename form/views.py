@@ -1,30 +1,100 @@
-import random
 from django.db.models import Q
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views import View
+from django.views.generic import CreateView, UpdateView
 from .models import FormBuilder as FormBuilderModel
 from django.urls import reverse
 import json
 from django.contrib import messages
-from .models import Field, Sections, FormFieldAnswers, FormSubmission, FiledResponses, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings, ChoiceModel
 import uuid
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
+
 from django.db.models.expressions import RawSQL
 from django.db.models import BooleanField
 from django.db.models.functions import Cast
+from django.db.models import Sum, Count
+
 from datetime import datetime
 from django.utils.dateparse import parse_date
+from django.views.generic import UpdateView
+from utils.globals import FormBuilderSteps
+from utils.choices import INPUT_TYPES
 
+from .models import Field, FieldOptions, Sections, FormFieldAnswers, Row, FormSubmission, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings
+from analytics.models import TableDisplaySettings, TableFilterSettings
 # Create your views here.
+
+
+class FormsView(View):
+
+    def get(self, request):
+        context = {'forms': FormBuilderModel.objects.all()}
+        return render(request, 'dashboard/forms.html', context)
+
+
+class FormListView(View):
+
+    def get(self, request):
+
+        builders = FormBuilderModel.objects.all()
+        return render(request, 'form/builder/forms.html', {'builders': builders, 'total': len(builders)})
+
+
+class SectionView(View):
+
+    def get_form(self, id):
+        try:
+            return FormBuilderModel.objects.filter(id=id).first()
+        except Exception as e:
+            messages.error(self.request, str(e))
+            return None
+
+    def get_section(self, id):
+        try:
+            return Sections.objects.filter(id=id).first()
+        except Exception as e:
+            messages.error(self.request, str(e))
+            return None
+
+    def get(self, request: HttpRequest, *args: str, **kwargs: dict) -> HttpResponse:
+        form_id = self.kwargs.get('formId')
+        form = self.get_form(form_id)
+
+        if form:
+            context = {
+                'sections': Sections.objects.filter(form=form).all().order_by('position'),
+                'form_id': form_id,
+                'input_types': [x[0] for x in INPUT_TYPES]
+            }
+            return render(request, 'form/builder/section.html', context)
+        return redirect('/form/builder/')
 
 
 class FormBuilder(View):
 
     def get(self, request, *args, **kwargs):
         context = {}
+        context.update(self.kwargs)
         return render(request=request, template_name='form/builder.html', context=context)
+
+    def post(self, request, *args, **kwargs):
+
+        form_name = request.POST.get('name')
+        form_title = request.POST.get('title')
+        form_description = request.POST.get('description')
+
+        form, created = FormBuilderModel.objects.get_or_create(
+            name=form_name,
+            title=form_title,
+            description=form_description,
+            created_by=self.request.user
+        )
+
+        return redirect(reverse('form_section_view', args=[form.id]))
 
 
 class MentorContactRecordForm(View):
@@ -50,7 +120,8 @@ class DataImportView(View):
         SYSTEM_DATE_ID = 0
         if form:
             context = {
-                'fields': [{'id': SYSTEM_DATE_ID, 'title': 'System Date'}] + form.get_all_fields
+                'fields': [{'id': SYSTEM_DATE_ID, 'title': 'System Date'}] + form.get_all_fields,
+                'form_id': self.form_id
             }
             return render(request=request, template_name='form/dataImortForm.html', context=context)
         else:
@@ -66,16 +137,16 @@ class DataImportView(View):
 
     def post(self, request, *args, **kwargs):
         self.form_id = self.kwargs.get('id')
+        print(kwargs)
         data = json.loads(request.body)
         sections = self.get_sections(data[0])
         prepared_data = []
-
         for fields in data:
             date_field_value = None
             for field in fields:
                 if field['field'] == 0:
                     # Assumes 'array_answer' is properly structured.
-                    date_field_value = field['array_answer'][0][0]
+                    date_field_value = field['array_answer']
                     break
 
             if date_field_value:
@@ -88,80 +159,125 @@ class DataImportView(View):
             if submission:
                 for field in fields:
                     if field['field'] != 0:
-                        prepared_data.append(FiledResponses(
-                            form=sections[field['field']].row.section.form,
+                        print(field.get('array_answer', None), "aa")
+                        prepared_data.append(FormFieldAnswers(
                             field=sections[field['field']],
                             submission_ref=submission,
-                            section=sections[field['field']].row.section,
-                            answer=None,
-                            array_answer=field['array_answer']
+                            answer=field.get('array_answer', None),
                         ))
 
-        form_answers = FiledResponses.objects.bulk_create(prepared_data)
+        form_answers = FormFieldAnswers.objects.bulk_create(prepared_data)
         return JsonResponse(data={'message': 'all good'})
 
 
 class DataTables(View):
+
+    def get_answer_value(self, answer, field):
+        if field.input_type != 'select':
+            return answer.answer
+        else:
+            options = field.options.all()
+            for op in options:
+                if op.value == answer.answer:
+                    return op.key
+
+        return answer.answer
+
     def get(self, request, *args, **kwargs):
 
-        # Assuming form retrieval remains the same
-        form = FormBuilderModel.objects.filter(
-            id=self.kwargs.get('id')).first()
+        form_id = self.kwargs.get('id', None)
+        page = self.request.GET.get('page', 1)
+        search_term = self.request.GET.get('search_term',
+                                           '')
+        from_date = self.request.GET.get(
+            'from_date', f'{datetime.today().year-1}-01-01')
+        to_date = self.request.GET.get(
+            'to_date', f'{datetime.today().year-1}-12-30')
 
-        query: str = self.request.GET.get('query', '')
-        if query is not None and query.strip() != '':
-            print(query)
+        if not from_date and to_date:
+            messages.error(request, "Date range should be selected.")
+            return redirect(reverse('data_table_view', kwargs={'id': form_id}))
+        if from_date and not to_date:
+            messages.error(request, "Date range should be selected.")
+            return redirect(reverse('data_table_view', kwargs={'id': form_id}))
 
-        # Retrieval of fields for the data table display and filter settings remains unchanged
-        data_table_fields = [
-            setting.field for setting in TableDataDisplaySettings.objects.filter(form=1, status=True).all().order_by('field')]
-        filter_settings = [
-            setting.field for setting in DataFilterSettings.objects.filter(form=1, status=True).all().order_by('field')]
+        filters = dict(self.request.GET)
+        if form_id:
 
-        if form:
-            # Adjusting FiledResponses query to work with submission_ref as a model
-            submissions_paginator = Paginator(FiledResponses.objects.annotate(
-                matches=RawSQL(
-                    "SELECT EXISTS(SELECT 1 FROM unnest(array_answer) AS s WHERE s ILIKE %s)",
-                    ('%' + query + '%',)
-                )
-            ).filter(matches=True).values('submission_ref_id').distinct(), 10)  # Note the change to 'submission_ref_id' for distinct values
+            filters.pop('to_date', None)
+            filters.pop('from_date', None)
+            filters.pop('page', None)
 
-            page_number = self.request.GET.get('page')
-            submissions_page = submissions_paginator.get_page(page_number)
+            ultimate_query = None
+            submissions_list = FormSubmission.objects.filter(
+                date__gte=from_date, date__lte=to_date).order_by('date')
+            for filter in filters.keys():
+                if filters[filter] != None and filters[filter] != ['None']:
+                    print({'field__id': filter.split('_')[
+                          1], 'answer__icontains': filters[filter]}, "filter again")
 
-            # Adjusting FiledResponses query for prefetching FormFieldAnswers
-            answers = FiledResponses.objects.filter(
-                submission_ref_id__in=[submission['submission_ref_id']
-                                       for submission in submissions_page],
-                field__in=[field.id for field in data_table_fields]
+                    dict_filters = {'field__id': filter.split('_')[1], 'answer__icontains': filters[filter][0],
+                                    }
+
+                    if len(submissions_list) > 0:
+                        dict_filters['submission_ref__in'] = submissions_list
+
+                    ultimate_query = FormFieldAnswers.objects.filter(
+                        **dict_filters)
+
+                    submissions_list = FormSubmission.objects.filter(submission_id__in=[
+                        x.submission_ref.submission_id for x in ultimate_query])
+
+            form = FormBuilderModel.objects.filter(
+                id=form_id).first()
+            settings, created = TableDisplaySettings.objects.get_or_create(
+                form=form
+            )
+            filters, created = TableFilterSettings.objects.get_or_create(
+                form=form
             )
 
-            # Adjusting organization of answers by submission_id for model change
-            answers_by_submission = {
-                submission['submission_ref_id']: {} for submission in submissions_page}
-            for answer in answers:
-                # Assuming submission_ref has a submission_id field or equivalent unique identifier
-                answers_by_submission[answer.submission_ref_id][answer.field_id] = answer.array_answer
+            if form:
+                fields = settings.fields.all()
+                submissions = Paginator(
+                    submissions_list.order_by('date'), 10)
 
-            data = [
-                [
-                    answers_by_submission[submission['submission_ref_id']].get(
-                        field.id, [])
-                    for field in data_table_fields
-                ]
-                for submission in submissions_page
-            ]
+                aligned_data = []
+                items = submissions.get_page(page)
+                for submission in items:
+                    answer_dict = {answer.field.title: self.get_answer_value(answer, answer.field) for answer in FormFieldAnswers.objects.filter(
+                        submission_ref=submission).all()}
 
-            context = {
-                'fields': data_table_fields,
-                'data': data,
-                'filter_fields': filter_settings,
-                'submissions_page': submissions_page
-            }
-            return render(request=request, template_name='form/dataTable.html', context=context)
+                    aligned_row = [answer_dict.get(
+                        field.title, None) for field in fields]
+
+                    aligned_data.append({
+                        'submission': submission,
+                        'answers': aligned_row
+                    })
+                context = {
+                    'headers': fields,
+                    'answers': aligned_data,
+                    'submissions': items,
+                    'filters': [{'filter': fil, 'options': fil.options.all()} for fil in filters.fields.all()],
+                    'path': self.request.get_full_path(),
+
+                }
+                request_params = self.request.GET.copy()
+                if 'page' in request_params:
+                    request_params.pop('page', None)
+                updated_filters = {}
+                for key in dict(self.request.GET):
+                    updated_filters[key] = dict(self.request.GET)[key][0]
+                context.update(updated_filters)
+
+                context['params'] = request_params.urlencode()
+
+                return render(request=request, template_name='form/dataTable.html', context=context)
+            else:
+                return redirect('/404')
         else:
-            return render(request=request, template_name='404.html')
+            return redirect('/404')
 
 
 class PublicView(View):
@@ -188,17 +304,14 @@ class PublicView(View):
                 form_essentials = key.split("-")
                 list_ans = value
 
-                form_data_object_list.append(FiledResponses(
+                form_data_object_list.append(FormFieldAnswers(
                     field=Field.objects.get(id=form_essentials[0]),
-                    section=Sections.objects.get(id=form_essentials[1]),
-                    form=FormBuilderModel.objects.get(id=form_essentials[2]),
-                    array_answer=list_ans,
-                    answer='',
+                    answer=list_ans[0],
                     submission_ref=submission
                 ))
 
             try:
-                FiledResponses.objects.bulk_create(form_data_object_list)
+                FormFieldAnswers.objects.bulk_create(form_data_object_list)
                 messages.success(
                     request, 'Whoa !! Your entry has been recorded.')
             except Exception as e:
@@ -267,3 +380,200 @@ class Settings(View):
         main_model.objects.bulk_update(objs, ['status'])
 
         return redirect(reverse('form_settings_view', kwargs={'id': 1}))
+
+
+class FieldChoicesView(CreateView, UpdateView):
+
+    def post(self, request: HttpRequest, *args: str, **kwargs) -> HttpResponse:
+        return super().post(request, *args, **kwargs)
+
+    def put(self, *args: str, **kwargs) -> HttpResponse:
+        return super().put(*args, **kwargs)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SectionAPIView(View):
+
+    def post(self, request, *args, **kwargs):
+
+        json_data = json.loads(request.body)
+        errors = []
+
+        for key in json_data.keys():
+            if json_data[key] != None:
+                if json_data[key].strip() == "":
+                    errors.append(f'{key} field cannot be empty')
+            else:
+                errors.append(f'{key} field cannot be null')
+
+        if errors != []:
+            return JsonResponse({
+                'success': False,
+                'errors': errors
+            })
+
+        try:
+            form = FormBuilderModel.objects.get(id=json_data.get('form', None))
+
+            if json_data['method'] == 'POST':
+                Sections.objects.create(
+                    form=form,
+                    name=json_data.get('name', None),
+                    title=json_data.get('title', None),
+                    position=json_data.get('position', None),
+                    message=json_data.get('message', None)
+                )
+
+            elif json_data['method'] == 'UPDATE':
+                section = Sections.objects.get(id=json_data['section'])
+                section.form = form
+                section.position = json_data['position']
+                section.name = json_data['name']
+                section.title = json_data['title']
+                section.message = json_data['message']
+                section.save()
+
+        except Exception as e:
+            return JsonResponse({
+                                'success': False,
+                                'errors': [str(e)]
+                                })
+
+        return JsonResponse({
+            'success': True,
+            'message': json_data
+        })
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RowApiView(View):
+
+    def post(self, request, *args, **kwargs):
+
+        json_data = json.loads(request.body)
+        errors = []
+
+        for key in json_data.keys():
+            if json_data[key] != None:
+                if json_data[key].strip() == "":
+                    errors.append(f'{key} field cannot be empty')
+            else:
+                errors.append(f'{key} field cannot be null')
+
+        if errors != []:
+            return JsonResponse({
+                'success': False,
+                'errors': errors
+            })
+
+        try:
+            section = Sections.objects.get(id=json_data.get('section', None))
+            if json_data['method'] == 'POST':
+                Row.objects.create(
+                    position=json_data.get('position', None),
+                    section=section,
+                    message=json_data.get('message', None),
+                )
+            elif json_data['method'] == 'UPDATE':
+                row = Row.objects.get(id=json_data.get('row', None))
+                row.position = json_data.get('position', None)
+                row.message = json_data.get('message', None)
+                row.save()
+
+        except Exception as e:
+            return JsonResponse({
+                                'success': False,
+                                'errors': [str(e)]
+                                })
+
+        return JsonResponse({
+            'success': True,
+            'message': json_data
+        })
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FieldView(View):
+
+    def post(self, request, *args, **kwargs):
+        errors = []
+        field_data = json.loads(request.body)
+        choices_dict = []
+        print(request.body)
+        for key in ['title', 'type']:
+            if field_data[key] is not None:
+                if field_data[key].strip() == '' or field_data[key] == 'None':
+                    errors.append(f'Please make sure to add {key}')
+            else:
+                errors.append(f'Please make sure to add {key}')
+
+        if field_data['type'] in ['select', 'checkbox']:
+            choices = field_data['choices']
+            if choices != None or choices.strip() != "":
+                key_val_pairs = choices.split(',')
+                if len(key_val_pairs) > 1:
+                    for key_val_pair in key_val_pairs:
+                        if len(key_val_pair.split('/')) <= 1 or len(key_val_pair.split('/')) > 2:
+                            errors.append(
+                                'Please make sure to put the choices in correct format')
+                        else:
+                            choices_dict.append({"key": key_val_pair.split(
+                                "/")[0], "val": key_val_pair.split("/")[1]})
+                else:
+                    errors.append(
+                        'Please make sure to put choices in correct format')
+                field_data['choices'] = choices_dict
+
+        if len(set([x['val'] for x in choices_dict])) < len(choices_dict):
+
+            errors.append("Please make sure not to repeat the values ")
+
+        if len(errors) == 0:
+            options = []
+            try:
+                for x in choices_dict:
+                    option, created = FieldOptions.objects.get_or_create(
+                        key=x['key'], value=x['val'])
+                    if created or option:
+                        options.append(option)
+            except Exception as e:
+                print(errors, e)
+                return JsonResponse({'success': False, 'errors': [str(e)]})
+            try:
+
+                if field_data['method'] == 'POST':
+                    field, created = Field.objects.get_or_create(
+                        title=field_data['title'],
+                        input_name=field_data['title'],
+                        placeholder=field_data['title'],
+                        order=field_data['position'],
+                        row=Row.objects.get(id=field_data['row']),
+                        input_type=field_data['type'],
+                        has_other_field=False,
+                        is_multiple_choice=False,
+                    )
+                    if len(options) > 0:
+                        for op in options:
+                            field.options.add(op)
+                            field.save()
+                elif field_data['method'] == 'UPDATE':
+                    field = Field.objects.get(id=field_data.get('field', None))
+                    field.title = field_data.get('title', None)
+                    field.input_name = field_data.get('title', None)
+                    field.input_type = field_data.get('type', None)
+                    field.order = field_data.get('position', 0)
+                    field.save()
+                    if len(options) > 0:
+                        field.options.clear()
+                        for op in options:
+                            field.options.add(op)
+                            field.save()
+                    field.save()
+            except Exception as e:
+                print(errors, e)
+                return JsonResponse({'success': False, 'errors': [str(e)]})
+            print(errors)
+            return JsonResponse({'success': True, 'data': field_data})
+        else:
+            print(errors)
+            return JsonResponse({'success': False, 'errors': errors})

@@ -86,7 +86,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/users/login'
-LOGIN_REDIRECT_URL = '/dashboard'
+LOGIN_REDIRECT_URL = '/form/select-forms/'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000
 

@@ -1,131 +1,171 @@
-{%extends 'dashboard/base.html'%} 
+{%extends 'dashboard/base.html'%} {%block head%}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css"
+/>
 
-{%block context%}
-
+{%endblock%} {%block context%}
 
 <div class="content-wrapper">
-  <br/>
+  <br />
   <section class="content">
-    <div class="row">
-    <div class="col-12 ">
-      <div class="card">
-        <div class="card-header col-md">
-         
-
-          <form class="row align-items-center">
-            <h5 class="col">Data Table</h5>
-            <div class="col">
-              <div class="input-group input-group-sm" >
-                <input
-                  type="text"
-                  name="query"
-                  class="form-control float-right"
-                  placeholder="Search"
-                />
-              </div>
-            </div>
-            {%for field in filter_fields%}
-              {%if field.input_type == 'date'%}
-              <div class="col-sm">
-                <div class="input-group input-group-sm">
-                <input name="{{field.id}}" type="date" class="form-control">
+    <form method="GET">
+      <div class="card m-2">
+        <div class="card-header">
+          <b>Data Table </b>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col col-lg-12">
+              <div class="row">
+                <div class="col col-lg-12">
+                  <div class="row">
+                    <div class="col">
+                      <label>From</label>
+                      <input
+                        type="date"
+                        placeholder="from"
+                        value="{{from_date}}"
+                        class="form-control"
+                        name="from_date"
+                        required
+                      />
+                    </div>
+                    <div class="col">
+                      <label>To</label>
+                      <input
+                        type="date"
+                        value="{{to_date}}"
+                        class="form-control"
+                        name="to_date"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              {%elif field.input_type == 'select'%}
-              <div class="col-sm">
-                <div class="input-group input-group-sm">
-                <select name="{{field.id}}" class="form-control">
-                  <option>{{field.title}}</option>
-                  {%for choice in field.choices%}
-                  <option value="{{choice}}">{{choice}}</option>
-                  {%endfor%}
-                  </select>
-                  </div>
-              </div>
-              {%endif%}
-            {%endfor%}
-            <div class="input-group input-group-sm col-1" >
-            <button  class="btn btn-md btn-secondary "><i class="fas fa-redo"></i></button>
             </div>
-            </form>
-
-        </div>
-        <!-- /.card-header -->
-        <div class="card-body table-responsive p-0">
-          <table class="table table-hover text-nowrap">
-            <thead>
-              <tr>
-                {%for header in fields%}
-                <th>{{header.title}}</th>
-                {%endfor%}
-              </tr>
-            </thead>
-            <tbody>
-              {%for row in data%}
-              <tr>
-                {%for data in row%} {% if data|length > 1 %}
-                <td>
-                  {%for d in data%} {%for field in d %} {{field|truncatechars:30}} {%endfor%},
+          </div>
+          <br />
+          <div class="col col-lg-12">
+            <div class="row">
+              {%for filter in filters%}
+              <div class="col">
+                <label>{{filter.filter.title}}</label>
+                <select name="field_{{filter.filter.id}}" class="form-control">
+                  <option value="None">Select A Value</option>
+                  {%for option in filter.options%}
+                  <option value="{{option.value}}">{{option.key}}</option>
                   {%endfor%}
-                </td>
-                {%else%}
-                <td>
-                  {%for d in data%} {%for field in d %} {{field|  truncatechars:30}} {%endfor%}
-                  {%endfor%}
-                </td>
-                {%endif%} {%endfor%}
-              </tr>
-              {%endfor%}
-            </tbody>
-          </table>
-        </div>
+                </select>
+              </div>
 
-        <!-- /.card-body -->
+              {%endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="float-right btn btn-primary">Reload Table</button>
+        </div>
       </div>
-      <nav aria-label="Page navigation example">
-        <ul class="pagination">
-          {%if submissions_page.has_previous %}
-          <li class="page-item">
+    </form>
+    <div class="row card p-4 m-2">
+      <div class="col-12">
+        <div class="">
+          <div class="float-right">
+            <div class="row">
+              <input
+                type="search"
+                name="search_term"
+                class="col form-control"
+                placeholder="Search Term"
+              />
+              &nbsp;
+              <button class="btn btn-primary">Search</button>
+            </div>
+          </div>
+          <!-- /.card-header -->
+
+          <div class="card-body table-responsive p-0">
+            <table id="data-table" class="table table-hover text-nowrap">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  {%for header in headers%}
+                  <th>{{header.title}}</th>
+                  {%endfor%}
+                </tr>
+              </thead>
+              <tbody>
+                {%for answer in answers%}
+                <tr>
+                  <td>{{answer.submission.date }}</td>
+                  {%for field_answer in answer.answers%}
+                  <td>{{field_answer}}</td>
+                  {%endfor%}
+                </tr>
+                {%endfor%}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- /.card-body -->
+        </div>
+        {%if submissions%}
+        <!---->
+        <div class="d-flex">
+          {%if submissions.has_next%}
+          <div class="">
             <a
-              class="page-link"
-              href="?page={{ submissions_page.previous_page_number }}"
-              >Previous</a
-            >
-          </li>
-          {%else%}
-          <li class="page-item">
-            <a class="page-link disabled" href="#">Previous</a>
-          </li>
-          {%endif%}
-          {% for num in submissions_page.paginator.page_range %}
-          {% if num > submissions_page.number|add:'-3' and num < submissions_page.number|add:'3' %}
-              {% if submissions_page.number == num %}
-                  <li class="page-item active">
-                      <span class="page-link">{{ num }}<span class="sr-only">(current)</span></span>
-                  </li>
-              {% else %}
-                  <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-              {% endif %}
-          {% endif %}
-      {% endfor %}
-          {%if submissions_page.has_next %}
-          <li class="page-item">
-            <a
-              class="page-link"
-              href="?page={{ submissions_page.next_page_number }}"
+              href="?{{params}}&page={{submissions.next_page_number}}"
+              class="btn btn-sm btn-secondary"
               >Next</a
             >
-          </li>
+          </div>
           {%else%}
-          <li class="page-item">
-            <a class="page-link disabled" href="#">Next</a>
-          </li>
+          <div class=""><a class="btn btn-sm btn-disabled">Next</a></div>
           {%endif%}
-        </ul>
-      </nav>
-      <!-- /.card -->
+          <!---->
+          {%if submissions.has_previous%}
+          <div class="">
+            <a
+              href="?{{params}}&page={{submissions.previous_page_number}}"
+              class="btn btn-sm btn-secondary"
+              >Prev</a
+            >
+          </div>
+          {%else%}
+          <div class=""><a class="btn btn-s, btn-disabled">Prev</a></div>
+          {%endif%}
+        </div>
+        {%endif%}
+        <!-- /.card -->
+      </div>
+      <br />
     </div>
-  </div>
   </section>
 </div>
-{%endblock%}
+<!-- jQuery (must be included before DataTables) -->
+
+<!-- DataTables JS -->
+{%block footer%}
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+ 
+
+<script>
+  $(document).ready(function () {
+    $("#data-table").DataTable({
+      paging: false,
+      lengthChange: true,
+      searching: false,
+      ordering: true,
+      info: true,
+      autoWidth: true,
+      responsive: true,
+      buttons: ["csv", "excel", "pdf"],
+    });
+  });
+</script>
+{%endblock%} {%endblock%}

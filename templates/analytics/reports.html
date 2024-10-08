@@ -1,0 +1,223 @@
+{%extends 'dashboard/base.html'%} {%load static%} {%block context%}
+<!-- break-->
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="container">
+        <form class="flex align-items-center">
+          <div class="row">
+            <div class="col form-group">
+              <input
+                name="from_date"
+                value="{{from_date}}"
+                type="date"
+                class="form-control"
+              />
+            </div>
+            <div class="col form-group">
+              <input
+                name="to_date"
+                value="{{to_date}}"
+                type="date"
+                class="form-control"
+              />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-sm btn-secondary">
+            <i class="fas fa-redo"></i> Reload
+          </button>
+        </form>
+        <br />
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="card card-danger">
+              <div class="card-body">
+                <div id="pieChart"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card card-success">
+              <div class="card-body">
+                <div class="chart">
+                  <div id="barChart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          {%for field in fields%} {%for option in field.options%}
+
+          <div class="col col-4">
+            <div class="card">
+              <div class="card-header">
+                <p class="badge float-center">
+                  {{option.option.key|truncatechars:15}}
+                </p>
+              </div>
+              <div class="card-body float-center">
+                <h3>{{option.count}}</h3>
+              </div>
+            </div>
+          </div>
+          {%endfor%} {%endfor%}
+        </div>
+      </div>
+      {%for field in fields%}
+      <div class="container">
+        <div class="row">
+          {%for option in field.options%} &nbsp;
+          <div class="card col-lg-12">
+            <div class="card-header">{{option.option.key}}</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col col-lg-7">
+                  <div class="card">
+                    <div class="card-body">
+                      <div id="chart-option-{{option.option.id}}"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col col-lg-5">
+                  <div class="row">
+                    {%for comparison in option.comparisons%}
+                    <div class="col col-lg-6">
+                      <div class="card p-3">
+                        <div class="description-block">
+                          <span
+                            class="description-percentage text-{{comparison.color}}"
+                            ><i class="fas fa-caret-{{comparison.arrow}}"></i>
+                            {{comparison.percentage}} %
+                          </span>
+                          <h5
+                            class="description-header  text-{{comparison.color}}"
+                          >
+                            {{comparison.difference}}
+                          </h5>
+                          <span
+                            class="description-text text-{{comparison.color}}"
+                            >{{comparison.name}}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {%endfor%}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {%endfor%}
+        </div>
+      </div>
+
+      {%endfor%}
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+  {%for field in fields%} {%for option in field.options%}
+  {{option.progress_chart|json_script:option.option.id}}
+
+  <script>
+    new ApexCharts(
+      document.getElementById("chart-option-{{option.option.id}}"),
+      {
+        chart: {
+          height: 280,
+          type: "area",
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        series: [
+          {
+            name: "Mentored: {{option.option.key}}",
+            data: JSON.parse(
+              document.getElementById("{{option.option.id}}").textContent
+            ).y_axis,
+          },
+        ],
+        fill: {
+          type: "gradient",
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.7,
+            opacityTo: 0.9,
+            stops: [0, 90, 100],
+          },
+        },
+
+        xaxis: {
+          categories: JSON.parse(
+            document.getElementById("{{option.option.id}}").textContent
+          ).x_axis,
+        },
+      }
+    ).render();
+  </script>
+
+  {%endfor%} {%endfor%} {{chart_data|json_script:"chart_data"}}
+  <script>
+    new ApexCharts(document.getElementById("barChart"), {
+      chart: {
+        height: 280,
+        type: "bar",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      series: [
+        {
+          name: "",
+          data: JSON.parse(document.getElementById("chart_data").textContent)
+            .y_axis,
+        },
+      ],
+
+      xaxis: {
+        categories: JSON.parse(
+          document.getElementById("chart_data").textContent
+        ).x_axis,
+      },
+    }).render();
+  </script>
+
+  <script>
+    var options = {
+      series: JSON.parse(document.getElementById("chart_data").textContent)
+        .y_axis,
+      chart: {
+        width: 525,
+        height: 280,
+        type: "donut",
+      },
+      labels: JSON.parse(document.getElementById("chart_data").textContent)
+        .x_axis,
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: 200,
+              height: 280,
+            },
+            legend: {
+              position: "bottom",
+            },
+          },
+        },
+      ],
+    };
+
+    var chart = new ApexCharts(document.getElementById("pieChart"), options);
+    chart.render();
+  </script>
+
+  {%endblock%}
+</div>

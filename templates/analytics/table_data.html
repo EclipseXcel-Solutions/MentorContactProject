@@ -1,0 +1,72 @@
+{%extends 'dashboard/base.html'%} {%load static%} {%block context%}
+<!-- break-->
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <form method="POST">
+        <div class="card">
+          <div class="card-header"><b>TABLE COLUMNS CONTROL VIEW</b></div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-lg-6 col-xs-12 col-md-12 col-sm-12">
+                <div class="card h-100">
+                  <div class="card-header bg-success">Enabled</div>
+                  <div class="card-body">
+                    {%csrf_token%} {%for enabled_field in enabled%}
+                    <div class="row">
+                      <label class="col-9"
+                        >{{enabled_field.title|truncatechars:50}}</label
+                      >
+                      <div class="col-3">
+                        <input
+                          id="{{enabled_field.id}}"
+                          name="field__{{enabled_field.id}}"
+                          type="checkbox"
+                          checked
+                        />
+                      </div>
+                    </div>
+                    {%endfor%}
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6 col-xs-12 col-md-12 col-sm-12">
+                <div class="card h-100">
+                  <div class="card-header bg-danger">Disabled</div>
+                  <div class="card-body">
+                    <div class="card-body">
+                      {%for disabled_field in disabled%}
+                      <div class="row">
+                        <label class="col-9"
+                          >{{disabled_field.title|truncatechars:50}}</label
+                        >
+                        <div class="col-3">
+                          <input
+                            id="{{disabled_field.id}}"
+                            name="field__{{disabled_field.id}}"
+                            type="checkbox"
+                          />
+                        </div>
+                      </div>
+                      {%endfor%}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary float-right">
+              Save
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {%endblock%}
+</div>

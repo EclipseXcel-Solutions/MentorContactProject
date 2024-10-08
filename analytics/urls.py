@@ -1,22 +1,19 @@
-"""mcp URL Configuration
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.urls import path
-from .views import Dashboard, IndexPage, FieldAnalytics
+from .views import Dashboard, TableDataDisplaySettingsView, TableDataCalculationView, TableDatFilterView, FieldAnalyticsView, ReportsView
 urlpatterns = [
-    path('admin/', Dashboard.as_view(), name="admin_dashboard"),
-    path('field-analytics/<id>/', FieldAnalytics.as_view(),
-         name='field_analytics_view')
+    path('admin/<id>/', Dashboard.as_view(), name="admin_dashboard"),
+    path('settings/table-data/<str:method>/<int:form>/',
+         TableDataDisplaySettingsView.as_view(), name="table_data_display_settings_view"),
+    path('settings/table-filter/<str:method>/<int:form>/',
+         TableDatFilterView.as_view(), name="table_data_filter_settings_view"),
+    path('settings/table-calculation/<str:method>/<int:form>/',
+         TableDataCalculationView.as_view(), name="table_data_calculation_settings_view"),
+    path('settings/field-analytics/<str:method>/<int:form>/',
+         FieldAnalyticsView.as_view(), name="field_analytics"),
+
+
+    path('reports/<int:field_id>/<int:form>/',
+         ReportsView.as_view(), name="reports_view"),
+
 ]

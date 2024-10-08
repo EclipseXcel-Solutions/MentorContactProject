@@ -1,0 +1,35 @@
+{%extends 'users/base.html'%} {%load static%} {%block context%}
+
+<section
+  class="d-flex container justify-content-center align-items-center"
+  style="height: 100vh"
+>
+  <div class="row">
+    <div class="col-12 col-xs-12 col-sm-12 col-md-12 col-lg-12 d-flex">
+      <img
+        src="{%static 'images/buffstate.png'%}"
+        class="img mx-auto"
+        height="100%"
+        width="50%"
+      />
+    </div>
+
+    <div class="col-12 col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      {%for form in forms%}
+      <div class="card w-100 cursor-pointer">
+        <div class="card-body bg-light rounded">
+          <a
+            href="{%url 'admin_dashboard' form.id %}"
+            class="text text-muted text-lg cursor-pointer"
+            >{{form.title}}</a
+          >
+        </div>
+      </div>
+      {%endfor%}
+      <button class="btn btn-outline-secondary btn-lg w-100">
+        Add a new form ?
+      </button>
+    </div>
+  </div>
+</section>
+{%endblock%}

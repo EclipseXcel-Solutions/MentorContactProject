@@ -1,0 +1,306 @@
+{%extends 'dashboard/base.html'%} {%load static%} {%block context%}
+<!-- break-->
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Dashboard</h1>
+        </div>
+        <!-- /.col -->
+        <form method="GET" class="col-sm-6">
+          <div class="row">
+            <div class="col input-group input-group-sm">
+              <select name="month" class="form-control" type="text">
+                <option>Month</option>
+                {%for month in months%}
+                <option value="{{month}}">{{month}}</option>
+                {%endfor%}
+              </select>
+            </div>
+
+            <div class="col input-group input-group-sm">
+              <select name="year" class="form-control" type="text">
+                <option>Year</option>
+                {%for year in years%}
+                <option value="{{year.year.year}}">{{year.year.year}}</option>
+                {%endfor%}
+              </select>
+            </div>
+            <div class="col input-group input-group-sm">
+              <button class="btn btn-sm btn-secondary">
+                <i class="fas fa-redo"></i>
+              </button>
+            </div>
+        </form>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+          <!-- ./col -->
+          <!-- break -->
+          {%for response in total_responses%}
+          <!--hello -->
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-light">
+              <div class="inner">
+                <h3>{{response.count}}</h3>
+                <p>
+                  {%for ans in response.array_answer%} {%for a in ans%} {{a}}
+                  {%endfor%} {%endfor%}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {%endfor%}
+        </div>
+        <!-- /.row -->
+        <!-- Main row -->
+        <div class="row">
+          <div class="col">
+            <div class="card">
+              <div class="card-body"><canvas id="chart-daily"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-body"><canvas id="chart-weekly"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <canvas id="chart-quarterly"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card">
+              <div class="card-body"><canvas id="chart-monthly"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-body"><canvas id="chart-yearly"></canvas></div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.row (main row) -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <footer class="main-footer">
+    <strong
+      >Copyright &copy; 2014-2021
+      <a href="https://adminlte.io">AdminLTE.io</a>.</strong
+    >
+    All rights reserved.
+    <div class="float-right d-none d-sm-inline-block"><b>Version</b> 3.2.0</div>
+  </footer>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- /.control-sidebar -->
+  <script>
+    function generateRGBAColor(index, total,a) {
+      const baseRed = 100 + (index * 80) % 156; // Generates a red component between 100 and 255
+      const baseGreen = 50 + (index * 90) % 206; // Generates a green component between 50 and 255
+      const baseBlue = 50 + (index * 100) % 206; // Generates a blue component between 50 and 255
+      const alpha = a; // Set a fixed alpha for semi-transparency
+      return `rgba(${baseRed}, ${baseGreen}, ${baseBlue}, ${alpha})`;
+  }
+  
+     const data = JSON.parse(JSON.parse(JSON.stringify('{{submissions|safe}}')))
+     
+     const chartQuarterly = document.getElementById("chart-quarterly");
+     const chartDaily = document.getElementById("chart-daily");
+     const chartWeekly = document.getElementById("chart-weekly");
+     const chartMonthly = document.getElementById("chart-monthly");
+     const chartYearly = document.getElementById("chart-yearly");
+     const submissions = JSON.parse("{{submissions|escapejs}}")
+    console.log(data)
+
+    const myChart = new Chart(chartDaily, {
+      type: 'line',
+      data: {
+          datasets: data.daily.map((dataset, index) => ({
+              label: dataset.name,
+              data: dataset.y.map((y, i) => ({y, x: dataset.x[i]})),
+              borderColor: generateRGBAColor(index, data.daily.length,1),
+              fill: false,
+              tension: 0.5
+
+          }))
+      },
+      options: {
+          scales: {
+              x: {
+                  type: 'linear',
+                  position: 'bottom'
+              }
+          }
+      }
+  });
+
+  const mixedChartWeekly = new Chart(chartWeekly, {
+    type: 'bar',
+    data: {
+        datasets: data.weekly.map((dataset, index) => ({
+            label: `Dataset ${index + 1}`,
+            data: dataset.y.map((y, i) => ({y, x: dataset.x[i]})),
+            backgroundColor: generateRGBAColor(index, data.daily.length,0.2),
+            borderColor: generateRGBAColor(index, data.daily.length,1),
+            borderWidth:1,
+            fill: false,
+            tension: 0.5
+
+        }))
+    },
+    options: {
+        scales: {
+            x: {
+                type: 'linear',
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+
+const mixedChartMonthly = new Chart(chartMonthly, {
+  type: 'scatter',
+  data : {
+    labels: [],
+    datasets: [{
+      type:'doughnut',
+      label: 'My First Dataset',
+      data: [300, 50, 100],
+      backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)'
+      ],
+      hoverOffset: 4
+    }]
+  }
+});
+
+    
+    const mixedChartYearly = new Chart(chartYearly, {
+      type: "scatter",
+      data: {
+        labels: ["January", "February", "March", "April"],
+        datasets: [
+        {
+            type: "radar",
+            label: "Bar Dataset",
+            data: [10, 20, 30, 40],
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+          },
+          {
+            type: "radar",
+            label: "Bar Dataset",
+            data: [10, 20, 30, 40],
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+          },
+          {
+            type: "radar",
+            label: "radar Dataset",
+            data: [50, 50, 50, 50],
+            fill: false,
+            borderColor: "rgb(54, 162, 235)",
+          },
+          {
+            type: "radar",
+            label: "radar Dataset",
+            data: [50, 50, 50, 50],
+            fill: false,
+            borderColor: "rgb(54, 162, 235)",
+          },
+          {
+            type: "pie",
+            label: "radar Dataset",
+            data: [50, 50, 50, 50],
+            fill: false,
+            borderColor: "rgb(54, 162, 235)",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+    const mixedChartQuarterly = new Chart(chartQuarterly, {
+      type: "scatter",
+      data: {
+        labels: ["January", "February", "March", "April"],
+        datasets: [
+        {
+            type: "doughnut",
+            label: "Bar Dataset",
+            data: [10, 20, 30, 40],
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+          },
+          {
+            type: "doughnut",
+            label: "Bar Dataset",
+            data: [10, 20, 30, 40],
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+          },
+          {
+            type: "doughnut",
+            label: "Line Dataset",
+            data: [50, 50, 50, 50],
+            fill: false,
+            borderColor: "rgb(54, 162, 235)",
+          },
+          {
+            type: "doughnut",
+            label: "Line Dataset",
+            data: [50, 50, 50, 50],
+            fill: false,
+            borderColor: "rgb(54, 162, 235)",
+          },
+          {
+            type: "doughnut",
+            label: "Line Dataset",
+            data: [50, 50, 50, 50],
+            fill: false,
+            borderColor: "rgb(54, 162, 235)",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+    
+  </script>
+  {%endblock%}
+</div>

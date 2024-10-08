@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -38,7 +38,7 @@ class Login(View):
         if user:
             if authenticate(request=request, username=username, password=password):
                 login(request=request, user=user)
-                return redirect('admin_dashboard')
+                return redirect('select-forms-view')
             else:
                 return redirect('login_view')
 

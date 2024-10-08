@@ -58,7 +58,7 @@
       href="{% static 'plugins/summernote/summernote-bs4.min.css' %}"
     />
   </head>
-  <body class="hold-transition sidebar-mini layout-fixed">
+  <body class="hold-transition sidebar-mini layout-fixed light-mode">
     <div class="wrapper">
       <!-- Preloader -->
       <div
@@ -74,7 +74,7 @@
       </div>
 
       <!-- Navbar -->
-      <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+      <nav class="main-header navbar navbar-expand navbar-light navbar-light">
         <!-- Left navbar links -->
         <ul class="navbar-nav">
           <li class="nav-item">
@@ -155,7 +155,7 @@
             class="brand-image img-circle elevation-3"
             style="opacity: 0.8"
           />
-          <span class="brand-text font-weight-light">EOP | MCS</span>
+          <span class="brand-text font-weight-dark">EOP | MCS</span>
         </a>
 
         <!-- Sidebar -->
@@ -218,56 +218,60 @@
       </script>
       {%endfor%} {%block context%} {%endblock%}
     </div>
-  </body>
-  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
-  <!-- jQuery UI 1.11.4 -->
-  <script src="{% static 'plugins/jquery-ui/jquery-ui.min.js' %}"></script>
-  <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-  <script>
-    $.widget.bridge("uibutton", $.ui.button);
-  </script>
-  <!-- Bootstrap 4 -->
-  <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <!-- ChartJS -->
-  <script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
-  <!-- Sparkline -->
-  <script src="{% static 'plugins/sparklines/sparkline.js' %}"></script>
-  <!-- JQVMap -->
-  <script src="{% static 'plugins/jqvmap/jquery.vmap.min.js' %}"></script>
-  <script src="{% static 'plugins/jqvmap/maps/jquery.vmap.usa.js' %}"></script>
-  <!-- jQuery Knob Chart -->
-  <script src="{% static 'plugins/jquery-knob/jquery.knob.min.js' %}"></script>
-  <!-- daterangepicker -->
-  <script src="{% static 'plugins/moment/moment.min.js' %}"></script>
-  <script src="{% static 'plugins/daterangepicker/daterangepicker.js' %}"></script>
-  <!-- Tempusdominus Bootstrap 4 -->
-  <script src="{% static 'plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js' %}"></script>
-  <!-- Summernote -->
-  <script src="{% static 'plugins/summernote/summernote-bs4.min.js' %}"></script>
-  <!-- overlayScrollbars -->
-  <script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
-  <!-- AdminLTE App -->
-  <script src="{% static 'dist/js/adminlte.js' %}"></script>
-  <!-- AdminLTE for demo purposes -->
-  <script src="{% static 'dist/js/demo.js' %}"></script>
-  <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-  <script src="{% static 'dist/js/pages/dashboard.js' %}"></script>
-  <script>
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          // Does this cookie string begin with the name we want?
-          if (cookie.substring(0, name.length + 1) === name + "=") {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
+
+    <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+    <!-- jQuery UI 1.11.4 -->
+    <script src="{% static 'plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script>
+      $.widget.bridge("uibutton", $.ui.button);
+    </script>
+    <!-- Bootstrap 4 -->
+    <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- ChartJS -->
+    <script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
+    <!-- Sparkline -->
+    <script src="{% static 'plugins/sparklines/sparkline.js' %}"></script>
+    <!-- JQVMap -->
+    <script src="{% static 'plugins/jqvmap/jquery.vmap.min.js' %}"></script>
+    <script src="{% static 'plugins/jqvmap/maps/jquery.vmap.usa.js' %}"></script>
+    <!-- jQuery Knob Chart -->
+    <script src="{% static 'plugins/jquery-knob/jquery.knob.min.js' %}"></script>
+    <!-- daterangepicker -->
+    <script src="{% static 'plugins/moment/moment.min.js' %}"></script>
+    <script src="{% static 'plugins/daterangepicker/daterangepicker.js' %}"></script>
+    <!-- Tempusdominus Bootstrap 4 -->
+    <script src="{% static 'plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js' %}"></script>
+    <!-- Summernote -->
+    <script src="{% static 'plugins/summernote/summernote-bs4.min.js' %}"></script>
+    <!-- overlayScrollbars -->
+    <script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static 'dist/js/adminlte.js' %}"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="{% static 'dist/js/demo.js' %}"></script>
+    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+    <script src="{% static 'dist/js/pages/dashboard.js' %}"></script>
+    <script>
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
           }
         }
+        return cookieValue;
       }
-      return cookieValue;
-    }
-    const csrftoken = getCookie("csrftoken");
-  </script>
+      const csrftoken = getCookie("csrftoken");
+    </script>
+    {%block footer%} {%endblock%}
+  </body>
 </html>

@@ -1,57 +1,85 @@
 {% extends 'dashboard/base.html' %} {% load static %} {%block head%}
-<style>
-  #form-builder {
-    display: flex;
-  }
-
-  #form-elements {
-    width: 200px;
-    padding: 10px;
-  }
-
-  .form-element {
-    margin-bottom: 5px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    cursor: move;
-  }
-
-  #form-preview {
-    flex-grow: 1;
-    min-height: 200px;
-    border: 1px solid #ccc;
-    padding: 10px;
-  }
-</style>
 {%endblock%} {% block context %}
 <!-- Main content -->
-<div class="container">
-  <div id="form-builder d-flex justify-content-between">
-    <div id="form-elements">
-      <div class="form-element" draggable="true" data-type="text">
-        Text Input
-      </div>
-      <div class="form-element" draggable="true" data-type="textarea">
-        Textarea
-      </div>
-      <!-- Add more form elements here -->
-    </div>
-    <div id="form-preview">Drop here</div>
-  </div>
-</div>
-<script>
-  document
-    .getElementById("form-preview")
-    .addEventListener("dragover", (event) => {
-      event.preventDefault();
-    });
+<div class="content-wrapper">
+  <br />
+  <section class="content">
+    <div class="">
+      <div class="card">
+        <div class="card-header">Form creation instructions</div>
+        <div class="card-body text-secondary">
+          <ul>
+            <li class="list-item">
+              Understanding Terms
 
-  document.getElementById("form-preview").addEventListener("drop", (event) => {
-    event.preventDefault();
-    const data = event.dataTransfer.getData("text");
-    const draggedElement = document.getElementById(data);
-    const clone = draggedElement.cloneNode(true);
-    document.getElementById("form-preview").appendChild(clone);
-  });
-</script>
+              <ul>
+                <li>
+                  <b><u>Sections</u></b
+                  >: Sections are the groups that contains different rows and
+                  columns for the form
+                </li>
+                <li>
+                  <b><u>Rows</u></b
+                  >: Rows are the groups that contains different fields
+                </li>
+                <li>
+                  <b><u>Fields</u></b
+                  >: Fields are different form elements eg. Text , Date , Time ,
+                  Date Time, Text Area, Select, Checkbox,Number etc
+                </li>
+
+                <li>
+                  <b><u>Option Values for checkbox and select</u></b
+                  >: While creating options for checkbox or select please type
+                  the input in key/value,key/value format eg.
+                  counselor1/101,counselor2/102,counselor3/103
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="card card-secondary">
+        <div class="card-header">Start creating a form</div>
+        <div class="card-body">
+          <form method="POST">
+            {%csrf_token%}
+            <div class="form-group">
+              <label>Name</label>
+              <input
+                type="text"
+                name="name"
+                class="form-control"
+                placeholder="Form Name"
+              />
+            </div>
+            <div class="form-group">
+              <label>Title</label>
+              <input
+                type="text"
+                name="title"
+                class="form-control"
+                placeholder="Title"
+              />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input
+                type="text"
+                name="description"
+                class="form-control"
+                placeholder="Description"
+              />
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-outline-secondary">
+                Next
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 {% endblock %}

@@ -1,0 +1,861 @@
+{%extends 'dashboard/base.html'%} {%block head%}
+
+<script src="
+https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
+"></script>
+{%endblock%} {%block context%}
+<div class="content-wrapper">
+  <br />
+  <section class="content">
+    <div class="row">
+      <div class="container col col-lg-10">
+        {%for section in sections%}
+        <div class="card collapsed-card">
+          <div class="card-header">
+            <div class="card-title">Section:{{section.title}}</div>
+            <div class="card-tools">
+              <button
+                type="button"
+                data-toggle="modal"
+                data-target="#update-section-{{section.id}}"
+                class="btn btn-tool"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+
+              <!-- Section Update Modal Starts -->
+              <div
+                class="modal fade show"
+                id="update-section-{{section.id}}"
+                aria-modal="true"
+                role="dialog"
+                style="display: none"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title">Update Section</h4>
+                      <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          value="{{section.name}}"
+                          id="section-name-{{section.id}}"
+                          name="section-name-{{section.id}}"
+                          placeholder="Eg.Section 1"
+                          required
+                        />
+                      </div>
+
+                      <div class="form-group">
+                        <label>Title</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          value="{{section.title}}"
+                          id="section-title-{{section.id}}"
+                          name="section-title-{{section.id}}"
+                          placeholder="Eg.Mentor/Mentee Information"
+                          required
+                        />
+                      </div>
+
+                      <div class="form-group">
+                        <label>Position</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="section-position-{{section.id}}"
+                          name="section-position-{{section.id}}"
+                          value="{{section.position}}"
+                          placeholder="Eg.0"
+                          required
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label>Message</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="section-message-{{section.id}}"
+                          name="section-message-{{section.id}}"
+                          value="{{section.message}}"
+                          placeholder="Eg.This field must be submitted"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onclick="createSection(event,'{{form_id}}','UPDATE','{{section.id}}')"
+                        type="button"
+                        class="btn btn-primary"
+                      >
+                        Save changes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Section Update Modal Ends -->
+              <button
+                type="button"
+                class="btn btn-tool"
+                data-card-widget="collapse"
+              >
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <ul class="list-group">
+              {%for row in section.rows%}
+
+              <div
+                class="modal fade show"
+                id="update-row-{{row.id}}"
+                aria-modal="true"
+                role="dialog"
+                style="display: none"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title">Update Row</h4>
+                      <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label>Position</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          value="{{row.position}}"
+                          id="update-row-position-{{row.id}}"
+                          name="update-row-position-{{row.id}}"
+                          placeholder="Eg.0"
+                          required
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label>Message</label>
+                        <input
+                          type="text"
+                          value="{{row.message}}"
+                          class="form-control"
+                          id="update-row-message-{{row.id}}"
+                          name="update-row-message-{{row.id}}"
+                          placeholder="Eg.This field must be submitted"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onclick="createRow(event,'{{section.id}}','UPDATE','{{row.id}}')"
+                        type="button"
+                        class="btn btn-primary"
+                      >
+                        Save changes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                {%for field in row.to_json.fields%}
+                <div
+                  class="modal fade show"
+                  id="update-field-{{field.id}}"
+                  aria-modal="true"
+                  role="dialog"
+                  style="display: none"
+                >
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h4 class="modal-title">Update Field</h4>
+                        <button
+                          type="button"
+                          class="close"
+                          data-dismiss="modal"
+                          aria-label="Close"
+                        >
+                          <span aria-hidden="true">×</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="form-group">
+                          <label>Title * </label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            value="{{field.title}}"
+                            id="update-field-title-{{row.id}}-{{field.id}}"
+                            name="field-name"
+                            placeholder="Title"
+                            required
+                          />
+                        </div>
+                        <div class="form-group">
+                          <label>Position * </label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            value="{{field.order}}"
+                            id="update-field-position-{{row.id}}-{{field.id}}"
+                            name="field-name"
+                            placeholder="0"
+                            required
+                          />
+                        </div>
+                        <div class="form-group">
+                          <label>Type *</label>
+                          <select
+                            id="update-field-type-{{row.id}}-{{field.id}}"
+                            name="input-type"
+                            class="form-control"
+                            value="{{field.input_type}}"
+                            required
+                          >
+                            <option value="None">Select A Value</option>
+                            {% for type in input_types%}
+                            <!--break-->
+
+                            <option value="{{type}}" {%if type == field.input_type %}selected{% endif %}>{{type}}</option>
+
+                            {%endfor%}
+                          </select>
+                        </div>
+                        <div
+                          id="update-field-options-{{row.id}}"
+                          class="form-group"
+                        >
+                          <br /><label>Choices</label
+                          ><input
+                            id="update-field-choices-{{row.id}}-{{field.id}}"
+                            class="form-control"
+                            type="text"
+                            value="{%for option in field.options%}{{option.key}}/{{option.value}},{%endfor%}"
+                            name="choices"
+                          />
+                        </div>
+                        <span id="info-{{row.id}}" class="text-muted"
+                          >Note:Please give all the options/values followed by ,
+                          eg: op1/val1,op2/val2</span
+                        >
+                      </div>
+                      <div class="modal-footer justify-content-between">
+                        <button
+                          type="button"
+                          class="btn btn-default"
+                          data-dismiss="modal"
+                        >
+                          Close
+                        </button>
+                        <button
+                          onclick="addField(event,'{{row.id}}','UPDATE','{{field.id}}')"
+                          type="button"
+                          class="btn btn-primary"
+                        >
+                          Save changes
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- break -->
+                {%if field.input_type == 'select'%}
+                <div class="form-group col-md">
+                  <label
+                    >{{field.title}}
+                    <i
+                      class="fas fa-edit"
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#update-field-{{field.id}}"
+                    ></i
+                  ></label>
+                  <select class="form-control">
+                    {%for op in field.options%}
+                    <option value="{{op.value}}">{{op.key}}</option>
+                    {%endfor%}
+                  </select>
+                </div>
+                {% elif field.input_type == 'date' %}
+                <div class="form-group col-md">
+                  <label
+                    >{{field.title}}
+                    <i
+                      class="fas fa-edit"
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#update-field-{{field.id}}"
+                    ></i
+                  ></label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    name="{{field.name}}"
+                  />
+                </div>
+                {% elif field.input_type == 'checkbox' %}
+                <div class="form-group col-md">
+                  <label
+                    >{{field.title}}
+                    <i
+                      class="fas fa-edit"
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#update-field-{{field.id}}"
+                    ></i
+                  ></label>
+
+                  <div class="row">
+                    {%for choice in field.options%}
+                    <div class="col-md-3">
+                      <input
+                        class
+                        type="checkbox"
+                        id="coding"
+                        name="{{field.id}}-{{section.id}}-{{form.id}}"
+                        value="{{choice.value}}"
+                      />
+                      <span>{{choice.key}}</span>
+                    </div>
+                    {%endfor%}
+                  </div>
+                </div>
+                {%else%}
+                <div class="form-group col-md">
+                  <label
+                    >{{field.title}}
+                    <i
+                      class="fas fa-edit"
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#update-field-{{field.id}}"
+                    ></i
+                  ></label>
+                  <input type="{{field.type}}" class="form-control" />
+                </div>
+
+                {%endif%} {%endfor%}
+
+                <div class="form group dropdown col col-sm-1">
+                  <label class="text-xs text-muted">Settings</label>
+                  <button
+                    class="btn dropdown-toggle"
+                    type="button"
+                    id="dropdownMenuButton"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="fas fa-cogs"></i>.
+                  </button>
+                  <div
+                    class="dropdown-menu"
+                    aria-labelledby="dropdownMenuButton"
+                  >
+                    <button
+                      class="btn btn-tool dropdown-item"
+                      type="button"
+                      data-toggle="modal"
+                      data-row-id="{{row.id}}"
+                      data-target="#create-field-{{row.id}}"
+                    >
+                      Add Field
+                    </button>
+                    <button
+                      type="button"
+                      data-toggle="modal"
+                      data-target="#update-row-{{row.id}}"
+                      class="btn btn-tool dropdown-item"
+                    >
+                      Edit Row
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {%endfor%}
+              <button
+                type="button"
+                data-toggle="modal"
+                data-target="#create-row-{{section.id}}"
+                class="btn btn-outline-secondary"
+              >
+                Add Row
+              </button>
+              <div
+                class="modal fade show"
+                id="create-row-{{section.id}}"
+                aria-modal="true"
+                role="dialog"
+                style="display: none"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h4 class="modal-title">Create Row</h4>
+                      <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label>Position</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="row-position-{{section.id}}"
+                          name="row-position-{{section.id}}"
+                          placeholder="Eg.0"
+                          required
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label>Message</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="row-message-{{section.id}}"
+                          name="row-message-{{section.id}}"
+                          placeholder="Eg.This field must be submitted"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onclick="createRow(event,'{{section.id}}','POST','0')"
+                        type="button"
+                        class="btn btn-primary"
+                      >
+                        Save changes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ul>
+          </div>
+        </div>
+        {%endfor%}
+        <div>
+          <button
+            type="button"
+            data-toggle="modal"
+            data-target="#create-section"
+            class="btn btn-outline-secondary w-full col-lg-12"
+          >
+            <i class="fas fa-plus"></i> ADD SECTION
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- create field modal -->
+    {%for section in sections%} {%for row in section.rows%}
+    <div
+      class="modal fade show"
+      id="create-field-{{row.id}}"
+      aria-modal="true"
+      role="dialog"
+      style="display: none"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Create Field</h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="field-title-{{row.id}}"
+                name="field-name"
+                placeholder="Title"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Position</label>
+              <input
+                type="text"
+                class="form-control"
+                id="field-position-{{row.id}}"
+                name="field-name"
+                placeholder="012"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select
+                id="field-type-{{row.id}}"
+                name="input-type"
+                class="form-control"
+                onchange="onFieldTypeChange(event,'{{row.id}}')"
+                required
+              >
+                <option value="None">Select A Value</option>
+                {% for type in input_types%}
+                <option value="{{type}}">{{type}}</option>
+                {%endfor%}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Close
+            </button>
+            <button
+              onclick="addField(event,'{{row.id}}','POST')"
+              type="button"
+              class="btn btn-primary"
+            >
+              Save changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {%endfor%} {%endfor%}
+    <!-- create field modal end -->
+    <!--- Section Creation modal -->
+    <div
+      class="modal fade show"
+      id="create-section"
+      aria-modal="true"
+      role="dialog"
+      style="display: none"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Create Section</h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="section_name"
+                name="section_name"
+                placeholder="Eg.Section 1"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="section_title"
+                name="section_title"
+                placeholder="Eg.Mentor/Mentee Information"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Position</label>
+              <input
+                type="number"
+                class="form-control"
+                id="section_position"
+                name="section_position"
+                placeholder="Eg.0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <input
+                type="text"
+                class="form-control"
+                id="section_message"
+                name="section_message"
+                placeholder="Eg.This field must be submitted"
+                required
+              />
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Close
+            </button>
+            <button
+              onclick="createSection(event,'{{form_id}}','POST')"
+              type="button"
+              class="btn btn-primary"
+            >
+              Save changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--- Section Creation modal -->
+  </section>
+</div>
+
+<script>
+  async function createRow(event, section, method, row) {
+    if (event && section) {
+      console.log(
+        method == "POST"
+          ? `row-position-${section}`
+          : `update-row-position-${row}`
+      );
+      let position = document.getElementById(
+        method == "POST"
+          ? `row-position-${section}`
+          : `update-row-position-${row}`
+      ).value;
+      let message = document.getElementById(
+        method == "POST"
+          ? `row-message-${section}`
+          : `update-row-message-${row}`
+      ).value;
+
+      let json_data = {
+        position,
+        message,
+        section,
+        method,
+        row,
+      };
+      const request = await fetch("/form/row-view/", {
+        method: "POST",
+        body: JSON.stringify(json_data),
+        headers: {},
+      });
+      const response = await request.json();
+      if(response.success == true){
+        Swal.fire({
+          title:"Success",
+          text: "Successfully Added A Field",
+          icon: "success",
+          confirmButtonText: "Ok",
+        }).then(
+          window.location.reload()
+        )
+      }else{
+        Swal.fire({
+          title:"Error",
+          text: "Failed to create field" + JSON.stringify(response.errors),
+          icon: "error",
+          confirmButtonText: "Ok",
+        }).then(
+          window.location.reload()
+        )
+      }
+    }
+  }
+  async function createSection(event, form, method, section) {
+    let title = document.getElementById(
+      method == "POST" ? "section_title" : `section-title-${section}`
+    ).value;
+    let name = document.getElementById(
+      method == "POST" ? "section_name" : `section-name-${section}`
+    ).value;
+    let position = document.getElementById(
+      method == "POST" ? "section_position" : `section-position-${section}`
+    ).value;
+    let message = document.getElementById(
+      method == "POST" ? "section_message" : `section-message-${section}`
+    ).value;
+    let json_data = {
+      title,
+      name,
+      position,
+      message,
+      form,
+      method,
+      section,
+    };
+    const request = await fetch("/form/section-view/", {
+      method: "POST",
+      body: JSON.stringify(json_data),
+      headers: {},
+    });
+    const response = await request.json();
+    if(response.success == true){
+      Swal.fire({
+        title:"Success",
+        text: "Successfully Added A Field",
+        icon: "success",
+        confirmButtonText: "Ok",
+      }).then(
+        window.location.reload()
+      )
+    }else{
+      Swal.fire({
+        title:"Error",
+        text: "Failed to create field" + JSON.stringify(response.errors),
+        icon: "error",
+        confirmButtonText: "Ok",
+      }).then(
+        window.location.reload()
+      )
+    }
+  }
+
+  function onFieldTypeChange(event, row) {
+    let element = event.target;
+    let selected_type = event.target.value;
+
+    console.log(selected_type);
+    if (selected_type == "select" || selected_type == "checkbox") {
+      let section_id =
+        element.parentElement.parentElement.parentElement.parentElement
+          .parentElement;
+      choices_exists = document.getElementById(`field-options-${row}`);
+      if (!choices_exists) {
+        html = `<div id='field-options-${row}' class='form-group'><br><label>Choices</label><input id = 'field-choices-${row}' class='form-control' type='text' name = 'choices' / ></div> <span id='info-${row}' class='text-muted'>Note:Please give all the options/values followed by , eg: op1/val1,op2/val2</span>`;
+        element.parentElement.innerHTML += html;
+      }
+    } else {
+      choices_exists = document.getElementById(`field-options-${row}`);
+      if (choices_exists) {
+        choices_exists.remove();
+        document.getElementById(`info-${row}`).remove();
+      }
+    }
+  }
+
+  async function addField(event, row, method, field = 0) {
+    if (event && row) {
+      let field_title = document.getElementById(
+        method == "POST"
+          ? `field-title-${row}`
+          : `update-field-title-${row}-${field}`
+      );
+      let field_type = document.getElementById(
+        method == "POST"
+          ? `field-type-${row}`
+          : `update-field-type-${row}-${field}`
+      );
+      let field_position = document.getElementById(
+        method == "POST"
+          ? `field-position-${row}`
+          : `update-field-position-${row}-${field}`
+      );
+      console.log(field_type.value);
+      let choices = document.getElementById(
+        method == "POST"
+          ? `field-choices-${row}`
+          : `update-field-choices-${row}-${field}`
+      );
+      if (field_title && field_type) {
+        json = {
+          title: field_title.value,
+          type: field_type.value,
+          row: row,
+          choices: choices != null ? choices.value : null,
+        };
+        const request = await fetch("/form/field-view/", {
+          method: "POST",
+          headers: {},
+          body: JSON.stringify({
+            field: field,
+            title: field_title.value,
+            type: field_type.value,
+            row: row,
+            position: field_position.value,
+            method: method,
+            choices: choices != null ? choices.value : null,
+          }),
+        });
+        const response = await request.json();
+        if(response.success == true){
+          Swal.fire({
+            title:"Success",
+            text: "Successfully Added A Field",
+            icon: "success",
+            confirmButtonText: "Ok",
+          }).then(
+            window.location.reload()
+          )
+        }else{
+          Swal.fire({
+            title:"Error",
+            text: "Failed to create field" + JSON.stringify(response.errors),
+            icon: "error",
+            confirmButtonText: "Ok",
+          }).then(
+            window.location.reload()
+          )
+        }
+      }
+    }
+  }
+</script>
+
+{%endblock%}

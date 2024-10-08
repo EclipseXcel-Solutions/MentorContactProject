@@ -1,11 +1,11 @@
-{%extends 'dashboard/base.html'%} 
-{%load static%}
-{%block context%}
+{%extends 'dashboard/base.html'%} {%load static%} {%block context%}
 
-<div class="row content-wrapper">
+<div class="content-wrapper">
+  <br/>
   <div class="container">
+
     <div class="d-flex flex-column">
-      <div class="card m-2">
+      <div class="card card-secondary m-2">
         <div class="card-header">Data Import Form</div>
         <div class="card-body">
           <form method="post" id="data-import-form">
@@ -24,39 +24,55 @@
                 id="import-btn"
                 type="submit"
                 id="confirm_btn"
-                class="btn btn-primary"
+                class="btn btn-outline-secondary"
               >
-                <i class="fa fa-save m-2"></i>Import
+                <i class="fa fa-save m-2"></i>Next
               </button>
             </div>
           </form>
         </div>
       </div>
-      <div class="card m-2" id="field-mapper">
-        <div class="card-header">Field Mapping </div>
+      <div class="card card-secondary m-2" id="field-mapper">
+        <div class="card-header">Field Mapping</div>
         <div
           class="card-body"
           id="field-mapping-body"
           style="height: 50vh; overflow: scroll"
         >
-       <div class="d-flex justify-content-center" id="empty-icon">
-        <img src="https://theyouthproject.in/static/media/empty_data_set.88c7d759.png"  height="50%" width="50%" draggable="false"/>
-       </div>
+          <div class="d-flex justify-content-center" id="empty-icon">
+            <img
+              src="https://theyouthproject.in/static/media/empty_data_set.88c7d759.png"
+              height="50%"
+              width="50%"
+              draggable="false"
+            />
+          </div>
+        </div>
       </div>
-      </div>
-      </div>
-      <div class="card m-2" id="table-data">
-        <div class="card-header d-flex  justify-content-between">File Data <button id="data-submission-btn" class="btn btn-success btn-sm">Import</button></div>
+    </div>
+    <div class="card card-secondary m-2" id="table-data">
+      <div class="card-header d-flex justify-content-between"> FormFieldAnswers</div>
         <div
           class="card-body col"
           id="table-data-body"
           style="height: 50vh; overflow: scroll"
         >
-        <div class="d-flex justify-content-center" id="empty-icon">
-          <img src="https://theyouthproject.in/static/media/empty_data_set.88c7d759.png"  height="50%" width="50%" draggable="false"/>
-         </div>
+          <div class="d-flex justify-content-center" id="empty-icon">
+            <img
+              src="https://theyouthproject.in/static/media/empty_data_set.88c7d759.png"
+              height="50%"
+              width="50%"
+              draggable="false"
+            />
+          </div>
+        </div>
+        <div class="card-footer">
+          <button id="data-submission-btn" class="col btn btn-success btn-sm">
+            Import
+          </button>
+        </div>
       </div>
-      </div>
+     
     </div>
   </div>
   <script>
@@ -64,17 +80,17 @@
     let dataSubmissionBtn = document.getElementById("data-submission-btn");
     let mappedHeadings = [];
     var parsedData = [];
-    
-    let formId = '{{form.id}}'
-    function dataImportHandler (event) {
+
+    let formId = "{{form_id|safe}}";
+    function dataImportHandler(event) {
       event.preventDefault();
       let file = document.getElementById("data-file")?.files[0];
       Papa.parse(file, {
         complete: function (results) {
           parsedData = results.data;
           const keys = parsedData[0];
-          if (parsedData[0].length > 0){
-            document.getElementById("field-mapping-body").innerHTML = ''
+          if (parsedData[0].length > 0) {
+            document.getElementById("field-mapping-body").innerHTML = "";
           }
           keys.forEach((key, index, keys) => {
             document.getElementById("field-mapping-body").innerHTML += `
@@ -97,7 +113,7 @@
       const data = [...parsedData];
       const mapKeys = data[0];
       const dataToPrepare = data.filter((d) => d != mapKeys);
-    
+
       dataToPrepare.forEach((item, index, array) => {
         const formData = [];
         mapKeys.forEach((mapItem, index, array) => {
@@ -105,11 +121,12 @@
           if (typeof mapItem == "number") {
             const finalObj = {
               field: mapItem,
-              array_answer: [item[index]?.split(",")],
+              array_answer: item[index],
               form: "{{form}}",
               section: "{{section}}",
               submission: "",
             };
+           
             formData.push(finalObj);
           }
         });
@@ -117,29 +134,28 @@
       });
       return preparedData;
     }
-    dataImportForm.addEventListener("submit",dataImportHandler );
+    dataImportForm.addEventListener("submit", dataImportHandler);
 
- 
     /*
     This section reads the file and creates a mapper section
     */
-    
+
     // mapping field to the table
     const mapFields = () => {
       let table = document.createElement("table");
       table.classList.add("table");
       table.style.overflow = "scroll";
-    
+
       let head = document.createElement("thead");
       head.classList.add("thead-dark");
       let headRow = document.createElement("tr");
-    
+
       parsedData[0].forEach((headers) => {
         let th = document.createElement("th");
         th.textContent = headers;
         headRow.append(th);
       });
-    
+
       head.appendChild(headRow);
       table.appendChild(head);
       let cleanedData = parsedData.filter((data) => data != parsedData[0]);
@@ -155,17 +171,17 @@
       });
       document.getElementById("table-data-body").appendChild(table);
     };
-    
+
     const onSelect = (obj, index) => {
       parsedData[0][index] = Number(obj.value);
       document.getElementById("table-data-body").innerHTML = "";
       mapFields();
     };
-    
+
     const submitData = async () => {
       const url = `${window.location.protocol}//${window.location.hostname}:${
         window.location.port
-      }/form/import/data/${1}/`;
+      }/form/import/data/{{form_id}}/`;
       console.log(url);
       const response = await fetch(url, {
         method: "POST",
@@ -178,9 +194,8 @@
       });
       console.log(await response.json());
     };
-    
+
     dataSubmissionBtn.addEventListener("click", submitData);
-    
   </script>
 </div>
 {%endblock%}

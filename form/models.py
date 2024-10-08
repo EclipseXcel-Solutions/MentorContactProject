@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 import uuid
 
+
 # Create your models here.
 
 
@@ -67,6 +68,10 @@ class Sections(models.Model):
     def __str__(self) -> str:
         return self.title
 
+    def save(self, *args, **kwargs):
+        print(args, kwargs)
+        super(Sections, self).save(*args, **kwargs)
+
     @property
     def rows(self):
         return Row.objects.filter(section=self.pk).order_by('position')
@@ -94,7 +99,7 @@ class Row(models.Model):
 
     @property
     def get_fields(self):
-        return Field.objects.filter(row=self.pk)
+        return Field.objects.filter(row=self.pk).order_by('order')
 
     @property
     def to_json(self):
@@ -104,6 +109,11 @@ class Row(models.Model):
             'message': self.message,
             'fields': [field.to_json for field in self.get_fields]
         }
+
+
+class FieldOptions(models.Model):
+    key = models.CharField(max_length=200)
+    value = models.CharField(max_length=200)
 
 
 class Field(models.Model):
@@ -117,32 +127,15 @@ class Field(models.Model):
         ('date', 'date'),
         ('datetime', 'datetime'), ('time', 'time')
     )
-
-    date_type_choices = (
-        ('TODAY', 'TODAY'),
-        ('CUSTOM', 'CUSTOM')
-    )
     title = models.CharField(max_length=200)
     input_name = models.CharField(max_length=200)
     placeholder = models.CharField(max_length=200, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
     row = models.ForeignKey(Row, on_delete=models.CASCADE)
-    input_type = models.CharField(choices=choices)
-    date_type = models.CharField(
-        choices=date_type_choices, max_length=10, default='CUSTOM')
-    is_multiple_choice = models.BooleanField(default=False)
+    input_type = models.CharField(choices=choices, max_length=100)
     has_other_field = models.BooleanField(default=False)
-    is_disabled = models.BooleanField(default=False)
-    choices = ArrayField(
-        ArrayField(
-            models.CharField(max_length=100, blank=True, null=True),
-            size=20,
-            blank=True,
-        ),
-        blank=True,
-        size=20,
-
-    )
+    is_multiple_choice = models.BooleanField(default=True)
+    options = models.ManyToManyField(FieldOptions)
 
     @property
     def to_json(self):
@@ -150,81 +143,29 @@ class Field(models.Model):
             'id': self.id,
             'title': self.title,
             'placeholder': self.placeholder,
+            'order': self.order,
             'input_type': self.input_type,
             'is_multiple_choice': self.is_multiple_choice,
             "input_name": self.input_name,
-            'date_field_choices': self.date_type,
-            "model_choices": [{
-                'title': choice.choice_title,
-                'key': choice.choice_id
-            } for choice in self.field_choices.all()]
-
+            "options": [{
+                'key': option.key,
+                'value': option.value
+            } for option in self.options.all()]
         }
 
     def __str__(self) -> str:
         return self.title
 
 
-class FiledResponses(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.CASCADE)
-    section = models.ForeignKey(Sections, on_delete=models.CASCADE)
-    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
-    answer = models.TextField(null=True, blank=True)
-    submission_ref = models.ForeignKey(
-        FormSubmission, on_delete=models.CASCADE)
-    array_answer = ArrayField(
-        ArrayField(
-            models.CharField(max_length=100, blank=True, null=True),
-            size=20,
-            blank=True,
-        ),
-        blank=True,
-        size=20,
-    )
-
-    def __str__(self) -> str:
-        return self.field.title
-
-
 class FormFieldAnswers(models.Model):
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
-    section = models.ForeignKey(Sections, on_delete=models.CASCADE)
-    form = models.ForeignKey(FormBuilder, on_delete=models.CASCADE)
     answer = models.TextField(null=True, blank=True)
     submission_ref = models.ForeignKey(
         FormSubmission, on_delete=models.SET_NULL, null=True, blank=True)
-    array_answer = ArrayField(
-        ArrayField(
-            models.CharField(max_length=100, blank=True, null=True),
-            size=20,
-            blank=True,
-        ),
-        blank=True,
-        size=20,
-    )
+    json_answer = models.JSONField(null=True, blank=True)
 
     def __str__(self) -> str:
         return self.field.title
-
-
-class CalculatedFields(models.Model):
-    """
-        Note: this can only be used in fields like
-        numbers,date,time
-    """
-    CALCULATION_TYPES = (
-        ('MINUTES', 'MINUTES'),
-        ('HOURS', 'HOURS'),
-        ('SECONDS', 'SECONDS'),
-        ('DIFFERENCE', 'DIFFERENCE'),
-        ('SUM', 'SUM'),
-    )
-    name = models.CharField(max_length=100)
-    field1 = models.ForeignKey(
-        Field, on_delete=models.CASCADE, related_name='greater_calculation_field')
-    field2 = models.ForeignKey(
-        Field, on_delete=models.CASCADE, related_name='smaller_calculation_field')
-    return_type = models.CharField(max_length=10, choices=CALCULATION_TYPES)
 
 
 class DataFilterSettings(models.Model):
