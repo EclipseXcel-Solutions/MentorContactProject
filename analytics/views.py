@@ -15,7 +15,7 @@ from collections import defaultdict
 import json
 from django.db.models import F
 import calendar
-
+import random
 
 from .models import TableDisplaySettings, TableFilterSettings
 # Create your views here.
@@ -31,7 +31,7 @@ class IndexPage(View):
 class Dashboard(View):
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs):
-
+        date_today = datetime.today()
         if self.kwargs.get('id', None):
             request.session['selected_form_id'] = self.kwargs.get('id', None)
         else:
@@ -46,16 +46,15 @@ class Dashboard(View):
         except FormBuilder.DoesNotExist:
             return redirect('/404')
 
-        most_recent_data = FormSubmission.objects.filter(form=form).last()
         select_fields = Field.objects.filter(
             row__section__form=form, input_type='select')
         select_field_responses = [
-            {'field': f'{x.title}', 'count': len(set([x.answer for x in FormFieldAnswers.objects.filter(field=x)]))} for x in select_fields]
+            {'field': f'{x.title}', 'color': random.choice(['danger', 'primary', 'success', 'info']), 'count': len(set([x.answer for x in FormFieldAnswers.objects.filter(field=x)]))} for x in select_fields]
 
         from_date = self.request.GET.get(
-            'from_date', datetime.today().date().strftime('%Y-%m-%d'))
+            'from_date', datetime(date_today.year, 1, 1).strftime('%Y-%m-%d'))
         to_date = self.request.GET.get(
-            'to_date', datetime.today().date().strftime('%Y-%m-%d'))
+            'to_date', date_today.date().strftime('%Y-%m-%d'))
 
         yearly_submissions = (
             FormSubmission.objects.filter(
