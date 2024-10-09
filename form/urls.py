@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.urls import path
 from .views import (FormBuilder, MentorContactRecordForm, PublicView, DataImportView, DataTables,
-                    Settings, FieldChoicesView, SectionView, FieldView, SectionAPIView, RowApiView, FormListView, FormsView)
+                    Settings, FieldChoicesView, SectionView, FieldView, SectionAPIView, RowApiView, FormListView, FormsView, DeleteField)
 urlpatterns = [
     path('builder/<id>/',
          FormBuilder.as_view(), name="form_builder_view"),
@@ -40,5 +40,7 @@ urlpatterns = [
     path('row-view/', RowApiView.as_view(), name="row_view"),
 
     # UI VIEWS
-    path('select-forms/', FormsView.as_view(), name='select-forms-view')
+    path('select-forms/', FormsView.as_view(), name='select-forms-view'),
+    path('delete-field/<int:field>/<int:form>/',
+         DeleteField.as_view(), name='delete-field-view')
 ]

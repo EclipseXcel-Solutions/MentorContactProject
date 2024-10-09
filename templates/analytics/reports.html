@@ -32,6 +32,24 @@
         </form>
         <br />
         <div class="row">
+          {%for field in fields%} {%for option in field.options%}
+
+          <div class="col-lg-4 col-md-4 col-xs col-sm-12">
+            <div class="info-box">
+              <span class="info-box-icon bg-{{option.color}} elevation-1"
+                ><i class="fas fa-circle"></i
+              ></span>
+              <div class="info-box-content">
+                <span class="info-box-text">
+                  {{option.option.key|truncatechars:15}}</span
+                >
+                <span class="info-box-number"> {{option.count}} </span>
+              </div>
+            </div>
+          </div>
+          {%endfor%} {%endfor%}
+        </div>
+        <div class="row">
           <div class="col-lg-6">
             <div class="card card-danger">
               <div class="card-body">
@@ -49,30 +67,22 @@
             </div>
           </div>
         </div>
-        <div class="row">
-          {%for field in fields%} {%for option in field.options%}
-
-          <div class="col col-4">
-            <div class="card">
-              <div class="card-header">
-                <p class="badge float-center">
-                  {{option.option.key|truncatechars:15}}
-                </p>
-              </div>
-              <div class="card-body float-center">
-                <h3>{{option.count}}</h3>
-              </div>
-            </div>
-          </div>
-          {%endfor%} {%endfor%}
-        </div>
       </div>
       {%for field in fields%}
       <div class="container">
         <div class="row">
           {%for option in field.options%} &nbsp;
           <div class="card col-lg-12">
-            <div class="card-header">{{option.option.key}}</div>
+            <div class="card-header">
+              <div class="d-flex justify-content-between">
+                <label>{{option.option.key}} </label>
+                <a
+                  href="/dashboard/csv-downloader/{{request.session.selected_form_id}}/?from_date={{from_date}}&to_date={{to_date}}&field_{{field.field.id}}={{option.option.value}}"
+                  class="btn btn-warning"
+                  ><i class="fas fa-download"></i> Download data</a
+                >
+              </div>
+            </div>
             <div class="card-body">
               <div class="row">
                 <div class="col col-lg-7">

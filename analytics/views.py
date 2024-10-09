@@ -16,7 +16,8 @@ import json
 from django.db.models import F
 import calendar
 import random
-
+import csv
+from django.http import HttpResponse
 from .models import TableDisplaySettings, TableFilterSettings
 # Create your views here.
 
@@ -237,7 +238,8 @@ class TableDataCalculationView(View):
                 form=form
             )
             context = {
-                'settings': settings
+                'settings': settings,
+                'fields': Field.objects.filter(row__section__form=form).all()
             }
             return render(request, 'analytics/field_caculation.html', context)
         else:
@@ -294,12 +296,12 @@ class ReportsView(View):
     def get(self, request, *args, **kwargs):
         form_id = self.kwargs.get('form', None)
         field = self.kwargs.get('field_id', None)
-
+        date_today = datetime.today()
         # req params
         from_date = self.request.GET.get(
-            'from_date', datetime.today().date().strftime('%Y-%m-%d'))
+            'from_date', datetime(date_today.year, 1, 1).strftime('%Y-%m-%d'))
         to_date = self.request.GET.get(
-            'to_date', datetime.today().date().strftime('%Y-%m-%d'))
+            'to_date', date_today.date().strftime('%Y-%m-%d'))
 
         form = FormBuilder.objects.filter(id=form_id).first()
         fields = Field.objects.filter(
@@ -330,6 +332,7 @@ class ReportsView(View):
                 {
                     'field': field,
                     'options': [{
+                        'color': random.choice(['info', 'success', 'primary', 'danger', 'warning']),
                         'count': (self.get_length({
                             "field": field,
                             "answer": option.value,
@@ -368,3 +371,104 @@ class ReportsView(View):
 
         print(context)
         return render(request, 'analytics/reports.html', context=context)
+
+
+class CSVDownloader(View):
+
+    def get_answer_value(self, answer, field):
+        if field.input_type != 'select':
+            return answer.answer
+        else:
+            options = field.options.all()
+            for op in options:
+                if op.value == answer.answer:
+                    return op.key
+
+        return answer.answer
+
+    def clean_data(self, value):
+        if value != None:
+            return value
+        else:
+            return "None"
+
+    def get(self, request, *args, **kwargs):
+
+        form_id = self.kwargs.get('id', None)
+        from_date = self.request.GET.get(
+            'from_date', f'{datetime.today().year-1}-01-01')
+        to_date = self.request.GET.get(
+            'to_date', f'{datetime.today().year-1}-12-30')
+
+        filters = dict(self.request.GET)
+        if form_id:
+
+            filters.pop('to_date', None)
+            filters.pop('from_date', None)
+            filters.pop('page', None)
+
+            ultimate_query = None
+            submissions_list = FormSubmission.objects.filter(
+                date__gte=from_date, date__lte=to_date).order_by('date')
+            for filter in filters.keys():
+                if filters[filter] != None and filters[filter] != ['None']:
+                    print({'field__id': filter.split('_')[
+                          1], 'answer__icontains': filters[filter]}, "filter again")
+
+                    dict_filters = {'field__id': filter.split('_')[1], 'answer__icontains': filters[filter][0],
+                                    }
+
+                    if len(submissions_list) > 0:
+                        dict_filters['submission_ref__in'] = submissions_list
+
+                    ultimate_query = FormFieldAnswers.objects.filter(
+                        **dict_filters)
+
+                    submissions_list = FormSubmission.objects.filter(submission_id__in=[
+                        x.submission_ref.submission_id for x in ultimate_query])
+
+            form = FormBuilder.objects.filter(
+                id=form_id).first()
+
+            if form:
+                settings, created = TableDisplaySettings.objects.get_or_create(
+                    form=form
+                )
+                filters, created = TableFilterSettings.objects.get_or_create(
+                    form=form
+                )
+                aligned_data = []
+                fields = settings.fields.all()
+                submissions = submissions_list.order_by('date')
+
+                for submission in submissions:
+                    answer_dict = {answer.field.title: self.get_answer_value(answer, answer.field) for answer in FormFieldAnswers.objects.filter(
+                        submission_ref=submission).all()}
+
+                    aligned_row = [answer_dict.get(
+                        field.title, None) for field in fields]
+
+                    aligned_data.append({
+                        'submission': submission,
+                        'answers': aligned_row
+                    })
+
+                print(aligned_data)
+
+                response = HttpResponse(
+                    content_type="text/csv",
+                    headers={
+                        "Content-Disposition": 'attachment; filename="report.csv"'},
+                )
+
+                writer = csv.writer(response)
+                writer.writerow(['Date']+[field.title for field in fields])
+                for data in aligned_data:
+                    print(data)
+                    if data.get('answers') != None:
+                        cleaned_data = [data['submission'].date]+[self.clean_data(
+                            x) for x in data.get("answers")]
+                        writer.writerow(cleaned_data)
+                return response
+            else:
+                return redirect('/404')

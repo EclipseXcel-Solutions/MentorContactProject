@@ -242,6 +242,18 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
                           />
                         </div>
                         <div class="form-group">
+                          <label>Row</label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="update-field-row-{{row.id}}"
+                            value="{{row.position}}"
+                            name="field-name"
+                            placeholder="012"
+                            required
+                          />
+                        </div>
+                        <div class="form-group">
                           <label>Type *</label>
                           <select
                             id="update-field-type-{{row.id}}-{{field.id}}"
@@ -278,13 +290,13 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
                         >
                       </div>
                       <div class="modal-footer justify-content-between">
-                        <button
-                          type="button"
-                          class="btn btn-default"
-                          data-dismiss="modal"
+                        <a
+                          href="{%url 'delete-field-view' field=field.id form=request.session.selected_form_id%}"
+                          class="btn btn-danger"
+                          
                         >
-                          Close
-                        </button>
+                          Delete
+                      </a>
                         <button
                           onclick="addField(event,'{{row.id}}','UPDATE','{{field.id}}')"
                           type="button"
@@ -544,6 +556,7 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
                 required
               />
             </div>
+            
             <div class="form-group">
               <label>Type</label>
               <select
@@ -807,6 +820,7 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
           ? `field-position-${row}`
           : `update-field-position-${row}-${field}`
       );
+     
       console.log(field_type.value);
       let choices = document.getElementById(
         method == "POST"

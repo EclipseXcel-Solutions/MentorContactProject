@@ -577,3 +577,33 @@ class FieldView(View):
         else:
             print(errors)
             return JsonResponse({'success': False, 'errors': errors})
+
+
+class DeleteField(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            field = Field.objects.get(id=self.kwargs.get('field'))
+
+            if field:
+
+                field_responses = FormFieldAnswers.objects.filter(
+                    field=field
+                )
+
+                if len(field_responses) > 0:
+
+                    messages.error(
+                        request, "Field contains important information , cannot delete it")
+                else:
+                    field.delete()
+                    messages.success(request, "Field Deleted")
+
+            return redirect(reverse('form_section_view', args=[self.kwargs.get('form')]))
+
+        except Exception as e:
+
+            messages.error(request, str(e))
+
+            return redirect(reverse('form_section_view', args=[self.kwargs.get('form')]))

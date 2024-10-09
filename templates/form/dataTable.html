@@ -74,14 +74,12 @@
         <div class="">
           <div class="float-right">
             <div class="row">
-              <input
-                type="search"
-                name="search_term"
-                class="col form-control"
-                placeholder="Search Term"
-              />
               &nbsp;
-              <button class="btn btn-primary">Search</button>
+              <a
+                href="/dashboard/csv-downloader/{{request.session.selected_form_id}}/?{{params}}"
+                class="btn btn-warning"
+                ><i class="fas fa-download"></i> Download data</a
+              >
             </div>
           </div>
           <!-- /.card-header -->

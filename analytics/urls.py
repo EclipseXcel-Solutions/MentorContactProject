@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import Dashboard, TableDataDisplaySettingsView, TableDataCalculationView, TableDatFilterView, FieldAnalyticsView, ReportsView
+from .views import Dashboard, TableDataDisplaySettingsView, TableDataCalculationView, TableDatFilterView, FieldAnalyticsView, ReportsView, CSVDownloader
 urlpatterns = [
     path('admin/<id>/', Dashboard.as_view(), name="admin_dashboard"),
     path('settings/table-data/<str:method>/<int:form>/',
@@ -15,5 +15,8 @@ urlpatterns = [
 
     path('reports/<int:field_id>/<int:form>/',
          ReportsView.as_view(), name="reports_view"),
+
+    path('csv-downloader/<int:id>/',
+         CSVDownloader.as_view(), name="CSV_downloader")
 
 ]
