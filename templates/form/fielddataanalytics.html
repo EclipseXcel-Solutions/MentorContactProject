@@ -1,0 +1,188 @@
+{%extends 'dashboard/base.html'%}
+{% load static %}
+
+{%block context%}
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <form method="POST">
+        {%csrf_token%}
+        <div class="card">
+          <div class="card-header">
+            <b>FIELD RELATIONSHIP ANALYTICS</b>
+          </div>
+          <div class="card-body">
+            <!-- Form Selection (Same as before) -->
+            <div class="row">
+              <div class="col-12 mb-4">
+                <div class="card">
+                  <div class="card-header bg-primary text-white">Form Selection</div>
+                  <div class="card-body">
+                    <select name="form_id" class="form-control" required>
+                      {% for form in forms %}
+                      <div class="row">
+                        <option value="{{form.id}}" {% if selected_form and selected_form.id == form.id %}selected{% endif %}>
+                          {{form.title}}
+                        </option>
+                      </div>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Relationship Fields Selection -->
+            <div class="row">
+              <!-- Primary Field (Same as before) -->
+              <div class="col-lg-6 col-xs-12 col-md-12 col-sm-12">
+                <div class="card h-100">
+                  <div class="card-header bg-success">Primary Field Selection</div>
+                  <div class="card-body">
+                    {%for field in available_fields %}
+                    <div class="row">
+                      <label class="col-9">{{field.title|truncatechars:50}}</label>
+                      <div class="col-3">
+                        {% if field.id == primary_field_id %}
+                        <input id="primary_{{field.id}}" name="primary_field_id" type="radio" value="{{field.id}}" checked />
+                        {% else %}
+                        <input id="primary_{{field.id}}" name="primary_field_id" type="radio" value="{{field.id}}" />
+                        {% endif %}
+                      </div>
+                    </div>
+                    {%endfor%}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Analysis Field (Same as before) -->
+              <div class="col-lg-6 col-xs-12 col-md-12 col-sm-12">
+                <div class="card h-100">
+                  <div class="card-header bg-info">Analysis Field Selection</div>
+                  <div class="card-body">
+                    {%for field in available_fields %}
+                    <div class="row">
+                      <label class="col-9">{{field.title|truncatechars:50}}</label>
+                      <div class="col-3">
+                        {% if field.id == analysis_field_id %}
+                        <input id="analysis_{{field.id}}" name="analysis_field_id" type="radio" value="{{field.id}}" checked />
+                        {% else %}
+                        <input id="analysis_{{field.id}}" name="analysis_field_id" type="radio" value="{{field.id}}" />
+                        {% endif %}
+                      </div>
+                    </div>
+                    {%endfor%}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Display Fields -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header bg-secondary text-white">Additional Fields to Display</div>
+                  <div class="card-body">
+                    {%for field in available_fields %}
+                    <div class="row">
+                      <label class="col-9">{{field.title|truncatechars:50}}</label>
+                      <div class="col-3">
+                        <input 
+                          id="display_{{field.id}}" 
+                          name="display_field_ids" 
+                          type="checkbox" 
+                          value="{{field.id}}"
+                          {% if field.id in display_field_ids %}checked{% endif %}
+                        />
+                      </div>
+                    </div>
+                    {%endfor%}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date Range (Same as before) -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header bg-warning">Date Range</div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-6">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" class="form-control" value="{{start_date}}" required />
+                      </div>
+                      <div class="col-6">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" class="form-control" value="{{end_date}}" required />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modified Results Section -->
+            <!-- Modified Results Section -->
+{% if show_results %}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-primary text-white">Analysis Results</div>
+      <div class="card-body">
+        {% for result in analysis_results %}
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              {{result.primary_field_name}}: {{result.primary_value}}
+              <span class="badge badge-info float-right">
+                Total Occurrences: {{result.total_occurrences}}
+              </span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>{{result.analysis_field_name}}</th>
+                    {% for field in display_fields %}
+                    <th>{{field.title}}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for occurrence in result.occurrences %}
+                  <tr>
+                    <td>{{occurrence.date}}</td>
+                    <td>{{occurrence.analysis_value}}</td>
+                    {% for value in occurrence.display_values %}
+                    <td>{{value}}</td>
+                    {% endfor %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+          </div>
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary float-right">Analyze</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{%endblock%}

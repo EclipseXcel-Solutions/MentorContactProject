@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -10,18 +10,15 @@ from django.urls import reverse
 import json
 from django.contrib import messages
 import uuid
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 
-from django.db.models.expressions import RawSQL
-from django.db.models import BooleanField
-from django.db.models.functions import Cast
-from django.db.models import Sum, Count
+
+from collections import defaultdict
+
 
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.views.generic import UpdateView
-from utils.globals import FormBuilderSteps
 from utils.choices import INPUT_TYPES
 
 from .models import Field, FieldOptions, Sections, FormFieldAnswers, Row, FormSubmission, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings
@@ -607,3 +604,108 @@ class DeleteField(View):
             messages.error(request, str(e))
 
             return redirect(reverse('form_section_view', args=[self.kwargs.get('form')]))
+
+
+class ValueAnalyticsView(View):
+    template_name = 'form/fielddataanalytics.html'
+
+    def get(self, request):
+        forms = FormBuilderModel.objects.all()  # Changed from FormBuilderModel
+        context = {
+            'forms': forms,
+            'show_results': False,
+            'available_fields': Field.objects.all()
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        form_id = request.POST.get('form_id')
+        primary_field_id = request.POST.get('primary_field_id')
+        analysis_field_id = request.POST.get(
+            'analysis_field_id')  # Changed from secondary_field_id
+        display_field_ids = request.POST.getlist('display_field_ids')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        # Get form and fields
+        selected_form = FormBuilderModel.objects.get(
+            id=form_id)  # Changed from FormBuilderModel
+        available_fields = Field.objects.filter(
+            row__section__form=selected_form)
+
+        # Get selected fields
+        primary_field = Field.objects.get(id=primary_field_id)
+        # Changed from secondary_field_id
+        analysis_field = Field.objects.get(id=analysis_field_id)
+        display_fields = Field.objects.filter(id__in=display_field_ids)
+
+        # Get submissions
+        submissions = FormSubmission.objects.filter(
+            form=selected_form,  # Changed from form_id to selected_form
+            date__range=[start_date, end_date]
+        ).order_by('date')
+
+        analysis_results = {}
+
+        for submission in submissions:
+            # Get primary and analysis field answers
+            primary_answer = FormFieldAnswers.objects.filter(
+                submission_ref=submission,
+                field=primary_field
+            ).first()
+
+            analysis_answer = FormFieldAnswers.objects.filter(  # Changed from secondary_answer
+                submission_ref=submission,
+                field=analysis_field
+            ).first()
+
+            if primary_answer and analysis_answer:
+                # Get display field values
+                display_values = []
+                for field in display_fields:
+                    answer = FormFieldAnswers.objects.filter(
+                        submission_ref=submission,
+                        field=field
+                    ).first()
+                    display_values.append(answer.answer if answer else '')
+
+                result_data = {
+                    'date': submission.date,
+                    'analysis_value': analysis_answer.answer,
+                    'display_values': display_values
+                }
+
+                # Add to results
+                primary_value = primary_answer.answer
+                if primary_value not in analysis_results:
+                    analysis_results[primary_value] = {
+                        'primary_value': primary_value,
+                        'primary_field_name': primary_field.title,
+                        'analysis_field_name': analysis_field.title,
+                        'total_occurrences': 0,
+                        'occurrences': []
+                    }
+
+                analysis_results[primary_value]['occurrences'].append(
+                    result_data)
+                analysis_results[primary_value]['total_occurrences'] += 1
+
+        # Convert to list for template
+        analysis_results = list(analysis_results.values())
+
+        context = {
+            'forms': FormBuilderModel.objects.all(),  # Changed from FormBuilder
+            'available_fields': available_fields,
+            'selected_form': selected_form,
+            'primary_field': primary_field,
+            'analysis_field': analysis_field,  # Changed name
+            'display_fields': display_fields,
+            'start_date': start_date,
+            'end_date': end_date,
+            'analysis_results': analysis_results,
+            'show_results': True,
+            # Added this
+            'display_field_ids': [int(id) for id in display_field_ids] if display_field_ids else []
+        }
+
+        return render(request, self.template_name, context)
