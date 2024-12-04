@@ -114,7 +114,7 @@ class Dashboard(View):
             'analytics': AnalyticsFieldsSettings.objects.filter(form=form, status=True),
             'submissions': {
                 'weekly': {
-                    'y_axis': [sub['week'].isocalendar().month for sub in weekly_submissions],
+                    'y_axis': [sub['week'].isocalendar()[1] for sub in weekly_submissions],
                     'x_axis': [sub['submissions_count'] for sub in weekly_submissions]
                 },
                 'monthly': {
