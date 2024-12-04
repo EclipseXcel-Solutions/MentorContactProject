@@ -81,6 +81,8 @@ class Dashboard(View):
             .annotate(submissions_count=Count('id'))
             .order_by('week')
         )
+
+        print(weekly_submissions)
         monthly_submissions = (
             FormSubmission.objects.filter(
                 date__gte=from_date, date__lte=to_date)
