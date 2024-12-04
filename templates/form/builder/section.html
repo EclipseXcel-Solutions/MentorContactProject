@@ -805,6 +805,8 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
 
   async function addField(event, row, method, field = 0) {
     if (event && row) {
+
+      
       let field_title = document.getElementById(
         method == "POST"
           ? `field-title-${row}`
@@ -820,8 +822,13 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
           ? `field-position-${row}`
           : `update-field-position-${row}-${field}`
       );
+      let field_row = document.getElementById(
+        method == "POST"
+          ? `field-row-${row}`
+          : `update-field-row-${row}`
+      );
      
-      console.log(field_type.value);
+      console.log(field_row.value);
       let choices = document.getElementById(
         method == "POST"
           ? `field-choices-${row}`
@@ -831,7 +838,7 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
         json = {
           title: field_title.value,
           type: field_type.value,
-          row: row,
+          row: field_row.value,
           choices: choices != null ? choices.value : null,
         };
         const request = await fetch("/form/field-view/", {
@@ -841,7 +848,7 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
             field: field,
             title: field_title.value,
             type: field_type.value,
-            row: row,
+            row: field_row.value,
             position: field_position.value,
             method: method,
             choices: choices != null ? choices.value : null,

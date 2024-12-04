@@ -11,19 +11,13 @@ import json
 from django.contrib import messages
 import uuid
 from django.core.paginator import Paginator
-
-
 from collections import defaultdict
-
-
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.views.generic import UpdateView
 from utils.choices import INPUT_TYPES
-
 from .models import Field, FieldOptions, Sections, FormFieldAnswers, Row, FormSubmission, DataFilterSettings, TableDataDisplaySettings, AnalyticsFieldsSettings
 from analytics.models import TableDisplaySettings, TableFilterSettings
-# Create your views here.
 
 
 class FormsView(View):
@@ -555,6 +549,8 @@ class FieldView(View):
                             field.save()
                 elif field_data['method'] == 'UPDATE':
                     field = Field.objects.get(id=field_data.get('field', None))
+                    field.row = Row.objects.get(position=field_data.get(
+                        'row', None), section=field.row.section)
                     field.title = field_data.get('title', None)
                     field.input_name = field_data.get('title', None)
                     field.input_type = field_data.get('type', None)
