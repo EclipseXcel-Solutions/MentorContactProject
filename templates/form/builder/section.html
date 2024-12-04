@@ -827,8 +827,13 @@ https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js
           ? `field-row-${row}`
           : `update-field-row-${row}`
       );
+
+      if(!field_row) {
+        field_row = {
+          value : row
+        }
+      }
      
-      console.log(field_row.value);
       let choices = document.getElementById(
         method == "POST"
           ? `field-choices-${row}`
